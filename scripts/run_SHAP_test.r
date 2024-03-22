@@ -5,10 +5,13 @@ library(mlr3learners)
 library(kernelshap) # provides fast approximation of shapley values via kernelshap function
 library(shapviz)
 library(tidyverse)
+library(here)
 
 # Load Zeller_2014 profiles + metadata
-profile <- read.table("/g/scb/zeller/karcher/SHAP_test/Profiles.all.samples.tsv", check.names = F)
-meta <- read.table('/g/scb/zeller/karcher/SHAP_test/Metadata.all.samples.tsv', check.names = F) %>%
+# profile <- read.table("/g/scb/zeller/karcher/SHAP_test/Profiles.all.samples.tsv", check.names = F)
+# meta <- read.table('/g/scb/zeller/karcher/SHAP_test/Metadata.all.samples.tsv', check.names = F) %>%
+profile <- read.table(here("data/Profiles.all.samples.tsv"), check.names = F)
+meta <- read.table(here('data/Metadata.all.samples.tsv'), check.names = F) %>%
     rownames_to_column('sampleID') %>%
     filter(str_detect(Cohort, "Zeller")) %>%
     filter(Condition %in% c("CRC", "CTR"))
@@ -49,21 +52,6 @@ library(randomForest)
 rfOOBImpoortance <- randomForest(
     as.formula(str_c("Condition ~ ", str_c(colnames(profileWithMeta)[colnames(profileWithMeta) != "Condition"], collapse = " + "))),
     # as.formula(str_c("effect_size ~ ", str_c(colnames(trainData)[1:10000], collapse = " + "))),
-    data = profileWithMeta  %>% mutate(Condition = factor(Condition, levels = c("CTR", "CRC"))),
+    data = profileWithMeta %>% mutate(Condition = factor(Condition, levels = c("CTR", "CRC"))),
     importance = TRUE
 )$importance
-
-shap <- apply(ps_shapviz$CRC$S, 2, mean) %>% as.data.frame()
-colnames(shap)[1] <- "rf_oob"
-shap <- shap %>%
-    rownames_to_column('feature') 
-
-rfOOBImpoortance <- rfOOBImpoortance %>%
-    as.data.frame() %>%
-    rownames_to_column('feature') %>%
-    .[, c("feature", "MeanDecreaseAccuracy")]
-
-inner_join(oob, rfOOBImpoortance) %>%
-    ggplot(aes(x = rf_oob, y = MeanDecreaseAccuracy)) +
-    geom_point() +
-    theme_classic()
