@@ -41,7 +41,13 @@ testing_folds <- extractFold(models.all.data.rf.v5, "testing")
 stopifnot(dim(inner_join(training_folds, testing_folds, by = c('sampleID', 'fold_id', 'resamp_id')))[1] == 0)
 
 # Save extracted data
-write_rds(mlr3_models, here('data/mlr3_models.rds'))
+map2(mlr3_models, names(mlr3_models), \(model, modelName) {
+    fold_id <- str_replace(modelName, "cv_fold", "")
+    fold_id <- str_replace(fold_id, "_.*", "")
+    resamp_id <- str_replace(modelName, ".*_rep", "")
+    write_rds(model, here('data/models', str_c("model__resamp_id_", resamp_id, "__fold_id_", fold_id, ".rds")))
+})
+
 write_tsv(models.all.data.rf.v5@phyloseq@otu_table@.Data %>% as.data.frame(), here('data/otu_table.tsv'))
 write_tsv(models.all.data.rf.v5@phyloseq@sam_data, here('data/metadata.tsv'))
 write_tsv(training_folds, here('data/training_folds.tsv'))
