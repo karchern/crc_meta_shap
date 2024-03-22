@@ -48,7 +48,7 @@ map2(mlr3_models, names(mlr3_models), \(model, modelName) {
     write_rds(model, here('data/models', str_c("model__resamp_id_", resamp_id, "__fold_id_", fold_id, ".rds")))
 })
 
-write.table(models.all.data.rf.v5@phyloseq@otu_table@.Data %>% as.data.frame(), here('data/otu_table.tsv'))
+write.table(models.all.data.rf.v5@norm_feat$norm.feat %>% as.data.frame(), here('data/otu_table.tsv'))
 write_tsv(models.all.data.rf.v5@phyloseq@sam_data, here('data/metadata.tsv'))
 write_tsv(training_folds, here('data/training_folds.tsv'))
 write_tsv(testing_folds, here('data/testing_folds.tsv'))
