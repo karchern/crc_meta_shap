@@ -31,41 +31,50 @@ profiles <- profiles %>%
 profiles$Condition <- as.factor(profiles$Condition)
 colnames(profiles) <- make.names(colnames(profiles))
 
-task_data <- as_task_classif(profiles, target = "Condition")
-
 rf <- lrn("classif.ranger", predict_type = "prob")
 lasso <- lrn("classif.cv_glmnet", alpha = 1, predict_type = 'prob')
 
 set.seed(12321)
 numFolds <- 5
 numRepeats <- 5
+
+### This was initially working but kernelshap later fails since no task is saved in the objects if we fit them this wise
+### Hence, manually extract training set and fit models that way.
+
+# cv <-  rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
+# cv$instantiate(task_data)
+
+# rf_eval <- resample(task_data, rf, cv, store_models = TRUE, store_task = TRUE)
+# rf_eval$aggregate(msr("classif.auc"))
+
+# lasso_eval <- resample(task_data, lasso, cv, store_models = TRUE)
+# lasso_eval$aggregate(msr("classif.auc"))
+
+# rf_learners <- rf_eval$learners
+# lasso_learners <- lasso_eval$learners
+
 cv <-  rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
-cv$instantiate(task_data)
-
-rf_eval <- resample(task_data, rf, cv, store_models = TRUE)
-rf_eval$aggregate(msr("classif.auc"))
-
-lasso_eval <- resample(task_data, lasso, cv, store_models = TRUE)
-lasso_eval$aggregate(msr("classif.auc"))
-
-rf_learners <- rf_eval$learners
-lasso_learners <- lasso_eval$learners
+cv$instantiate(as_task_classif(profiles, target = "Condition"))
 
 for (foldRepeatIndex in 1:(numFolds*numRepeats)){
+    print(foldRepeatIndex)
     foldIndex <- cv$folds(foldRepeatIndex)
     repeatIndex <- cv$repeats(foldRepeatIndex)
-    #training_data <- profiles[cv$train_set(foldIndex), ] %>% select(-Condition)
-    #test_data <- profiles[cv$test_set(foldIndex), ]  %>% select(-Condition)
     training_data <- profiles[cv$train_set(foldIndex), ]
     test_data <- profiles[cv$test_set(foldIndex), ]
+
+    tasky <- as_task_classif(training_data, target = "Condition")
+    rf$train(tasky)
+    lasso$train(tasky)
+
     write_tsv(training_data %>% 
         rownames_to_column('sampleID') %>%
         relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("training_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
     write_tsv(test_data  %>% 
         rownames_to_column('sampleID') %>%
         relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
-    write_rds(rf_learners[[foldRepeatIndex]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
-    write_rds(lasso_learners[[foldRepeatIndex]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
+    write_rds(rf, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
+    write_rds(lasso, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
 }
 
 
