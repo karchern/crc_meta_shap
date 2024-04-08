@@ -33,7 +33,7 @@ colnames(profiles) <- make.names(colnames(profiles))
 
 task_data <- as_task_classif(profiles, target = "Condition")
 
-rf <- lrn("classif.randomForest", predict_type = "prob", importance = "accuracy")
+rf <- lrn("classif.ranger", predict_type = "prob")
 lasso <- lrn("classif.cv_glmnet", alpha = 1, predict_type = 'prob')
 
 set.seed(12321)
@@ -64,8 +64,8 @@ for (foldRepeatIndex in 1:(numFolds*numRepeats)){
     write_tsv(test_data  %>% 
         rownames_to_column('sampleID') %>%
         relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
-    # write_rds(rf_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
-    # write_rds(lasso_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
+    write_rds(rf_learners[[foldRepeatIndex]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
+    write_rds(lasso_learners[[foldRepeatIndex]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
 }
 
 
