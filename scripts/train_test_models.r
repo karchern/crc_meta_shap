@@ -42,10 +42,10 @@ numRepeats <- 5
 cv <-  rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
 cv$instantiate(task_data)
 
-rf_eval <- resample(task_data, rf, cv)
+rf_eval <- resample(task_data, rf, cv, store_models = TRUE)
 rf_eval$aggregate(msr("classif.auc"))
 
-lasso_eval <- resample(task_data, lasso, cv)
+lasso_eval <- resample(task_data, lasso, cv, store_models = TRUE)
 lasso_eval$aggregate(msr("classif.auc"))
 
 rf_learners <- rf_eval$learners
