@@ -38,7 +38,8 @@ lasso <- lrn("classif.cv_glmnet", alpha = 1, predict_type = 'prob')
 
 set.seed(12321)
 numFolds <- 5
-cv <-  rsmp("repeated_cv", folds = numFolds, repeats = 5)
+numRepeats <- 5
+cv <-  rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
 cv$instantiate(task_data)
 
 rf_eval <- resample(task_data, rf, cv)
@@ -50,13 +51,21 @@ lasso_eval$aggregate(msr("classif.auc"))
 rf_learners <- rf_eval$learners
 lasso_learners <- lasso_eval$learners
 
-for (foldIndex in 1:numFolds){
-    training_data <- profiles[cv$train_set(foldIndex), ] %>% select(-Condition)
-    test_data <- profiles[cv$test_set(foldIndex), ]  %>% select(-Condition)
-    write_tsv(training_data, here('data', 'fold_info', str_c(str_c("training_data_fold, ", foldIndex, sep = ""), ".tsv")))
-    write_tsv(test_data, here('data', 'fold_info', str_c(str_c("test_data_fold, ", foldIndex, sep = ""), ".tsv")))
-    write_rds(rf_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__RF.rds")))
-    write_rds(lasso_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__lasso_learners.rds")))
+for (foldRepeatIndex in 1:(numFolds*numRepeats)){
+    foldIndex <- cv$folds(foldRepeatIndex)
+    repeatIndex <- cv$repeats(foldRepeatIndex)
+    #training_data <- profiles[cv$train_set(foldIndex), ] %>% select(-Condition)
+    #test_data <- profiles[cv$test_set(foldIndex), ]  %>% select(-Condition)
+    training_data <- profiles[cv$train_set(foldIndex), ]
+    test_data <- profiles[cv$test_set(foldIndex), ]
+    write_tsv(training_data %>% 
+        rownames_to_column('sampleID') %>%
+        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("training_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
+    write_tsv(test_data  %>% 
+        rownames_to_column('sampleID') %>%
+        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
+    # write_rds(rf_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
+    # write_rds(lasso_learners, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
 }
 
 
