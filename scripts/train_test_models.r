@@ -13,8 +13,8 @@ profiles <- profiles[, colnames(profiles) %in% rownames(meta)]
 profiles <- profiles[, match(rownames(meta), colnames(profiles))]
 stopifnot(all(colnames(profiles) == rownames(meta)))
 
-profiles <- profiles[apply(profiles, 1, \(x) max(x) > 0.001), ]
-profiles <- profiles[apply(profiles, 1, \(x) mean(x > 0) > 0.1), ]
+profiles <- profiles[apply(profiles, 1, \(x) max(x) > 0.0005), ]
+profiles <- profiles[apply(profiles, 1, \(x) mean(x > 0) > 0.05), ]
 
 profiles <- log10(profiles + 1E-4)
 
