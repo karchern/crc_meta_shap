@@ -13,57 +13,44 @@ if (interactive()) {
     r_id <- 3
     f_id <- 5
     on_what <- "training"
+    which_model <- "RF"
 } else {
     args <- commandArgs(trailingOnly = TRUE)
     r_id <- as.integer(args[1])
     f_id <- as.integer(args[2])
     on_what <- args[3]
+    which_model <- args[4]
 }
 
 set.seed(11323)
 
 # Load model
-model <- readRDS(here(str_c("data/models/model__resamp_id_", r_id, "__fold_id_", f_id, ".rds")))
-# Load profile
-profiles_all <- read.table(here("data/otu_table.tsv"))
-rownames(profiles_all) <- make.names(rownames(profiles_all))
-# subset to training and testing fold
-training_fold <- read_tsv(here('data/training_folds.tsv')) %>%
-    filter(fold_id == f_id, resamp_id == r_id) %>%
-    select(-fold_id, -resamp_id)
-testing_fold <- read_tsv(here('data/testing_folds.tsv')) %>%
-    filter(fold_id == f_id, resamp_id == r_id) %>%
-    select(-fold_id, -resamp_id)
-profiles_training <- profiles_all %>%
-    t() %>%
-    as.data.frame() %>%
-    rownames_to_column('sampleID') %>%
-    inner_join(training_fold) %>%
-    column_to_rownames('sampleID') %>%
-    # t() %>%
-    as.data.frame()
-profiles_testing <- profiles_all %>%
-    t() %>%
-    as.data.frame() %>%
-    rownames_to_column('sampleID') %>%
-    inner_join(testing_fold) %>%
-    column_to_rownames('sampleID') %>%
-    # t() %>%
-    as.data.frame()
+lasso_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", repeatIndex, "__lasso.rds")))
+RF_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", repeatIndex, "__RF.rds")))
+
+models <- list("RF" = RF_model, "lasso" = lasso_model)
+
+training_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("training_data_fold", f_id, "__repeat_", r_id, ".tsv")))
+testing_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("test_data_fold", f_id, "__repeat_", r_id, ".tsv")))
+
+profiles_training <- training_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
+profiles_testing <- testing_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
+training_labels <- training_data_and_labels %>% select(sampleID, Condition)
+testing_labels <- testing_data_and_labels %>% select(sampleID, Condition)
 
 if (on_what == "training") {
     ps <- kernelshap(
-        model, X = profiles_training, bg_X = profiles_training[sample(nrow(profiles_training), 250), ],
+        models[[which_model]], X = profiles_training, bg_X = profiles_training,
     )
 } else if (on_what == "testing") {
     ps <- kernelshap(
-        model, X = profiles_testing, bg_X = profiles_testing[sample(nrow(profiles_testing), 250), ],
+        models[[which_model]], X = profiles_testing, bg_X = profiles_testing,
     )
 } else {
     stop("on_what must be either 'training' or 'testing'")
 }
 
-write_rds(ps, here(str_c("results/kernelshap_objects/resamp_id_", r_id, "__fold_id_", f_id, "__on_", on_what, ".rds")))
+write_rds(ps, here(str_c("results/kernelshap_objects/resamp_id_", r_id, "__fold_id_", f_id, "__on_", on_what, "__which_model_", which_model, ".rds")))
 
 # ps_shapviz <- shapviz(ps)
 # ps_shapviz_importance <- sv_importance(ps_shapviz, kind = 'both', max_display = 30)
