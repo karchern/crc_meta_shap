@@ -3,7 +3,7 @@ library(tidyverse)
 library(here)
 library(ggembl)
 
-dataset <- "Feng"
+dataset <- "Zeller"
 pc <- -4
 
 # load models and clean up
@@ -114,14 +114,14 @@ for (mt in c("lasso", "RF")) {
     shap_tmp2$feature <- factor(shap_tmp2$feature, levels = shap_tmp2 %>%
         group_by(feature) %>%
         summarize(n = mean(abs(shap_value))) %>%
-        arrange(desc(n)) %>%
+        arrange(n) %>%
         pull(feature))
 
     shap_tmp2 <- shap_tmp2 %>%
         inner_join(shap_tmp2 %>%
             group_by(feature) %>%
             summarize(n = mean(abs(shap_value))) %>%
-            arrange(desc(n)) %>%
+            arrange(n) %>%
             head(10), by = "feature")
 
 
