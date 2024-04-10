@@ -113,14 +113,14 @@ for (mt in c("lasso", "RF")) {
         filter(model_type == mt)
     shap_tmp2$feature <- factor(shap_tmp2$feature, levels = shap_tmp2 %>%
         group_by(feature) %>%
-        summarize(n = median(shap_value)) %>%
+        summarize(n = mean(abs(shap_value))) %>%
         arrange(desc(n)) %>%
         pull(feature))
 
     shap_tmp2 <- shap_tmp2 %>%
         inner_join(shap_tmp2 %>%
             group_by(feature) %>%
-            summarize(n = median(shap_value)) %>%
+            summarize(n = mean(abs(shap_value))) %>%
             arrange(desc(n)) %>%
             head(10), by = "feature")
 
@@ -133,29 +133,29 @@ for (mt in c("lasso", "RF")) {
             filter(on == 'training\nset') %>%
             group_by(on, model_type, feature) %>%
             summarize(
-                mea = mean(shap_value)
+                mea = mean(abs(shap_value))
             ), aes(x = feature, y = mea, group = on), position = position_nudge(0.25), color = 'black', shape = 3, show.legend = FALSE) +
         geom_point(data = shap_tmp2 %>%
             group_by(on, model_type, feature) %>%
             filter(on == 'test\nset') %>%
             summarize(
-                mea = mean(shap_value)
+                mea = mean(abs(shap_value))
             ), aes(x = feature, y = mea, group = on), position = position_nudge(-0.25), color = 'black', shape = 3, show.legend = FALSE) +
-        geom_point(data = shap_tmp2 %>%
-            filter(on == 'training\nset') %>%
-            group_by(on, model_type, feature) %>%
-            summarize(
-                mea = median(shap_value)
-            ), aes(x = feature, y = mea, group = on), position = position_nudge(0.25), color = 'black', shape = 16, show.legend = FALSE) +
-        geom_point(data = shap_tmp2 %>%
-            group_by(on, model_type, feature) %>%
-            filter(on == 'test\nset') %>%
-            summarize(
-                mea = median(shap_value)
-            ), aes(x = feature, y = mea, group = on), position = position_nudge(-0.25), color = 'black', shape = 16, show.legend = FALSE) +
+        # geom_point(data = shap_tmp2 %>%
+        #     filter(on == 'training\nset') %>%
+        #     group_by(on, model_type, feature) %>%
+        #     summarize(
+        #         mea = median(abs(shap_value))
+        #     ), aes(x = feature, y = mea, group = on), position = position_nudge(0.25), color = 'black', shape = 16, show.legend = FALSE) +
+        # geom_point(data = shap_tmp2 %>%
+        #     group_by(on, model_type, feature) %>%
+        #     filter(on == 'test\nset') %>%
+        #     summarize(
+        #         mea = median(abs(shap_value))
+        #     ), aes(x = feature, y = mea, group = on), position = position_nudge(-0.25), color = 'black', shape = 16, show.legend = FALSE) +
         theme_presentation() +
         coord_flip() +
-        ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dot median; black cross mean\nsorted by median shap")) +
+        ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack cross mean(abs(shap))\nsorted by mean(abs(shap)) shap")) +
         NULL
 
     ggsave(plot = plot, filename = here('plots', str_c(mt, "__", dataset, '__shap_values_boxplot_', '.pdf')), width = 5, height = 5)
