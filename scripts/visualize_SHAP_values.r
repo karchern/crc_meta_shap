@@ -105,8 +105,7 @@ shap_tmp <- shap %>%
     # For testing folds, I get one shap value per model and resampling
     # for training folds, I get  4 shap values (in 5x cv) per model and resampling
     # In any case, take the median shap value for each sampleID
-    group_by(sampleID, on, model_type, feature) %>%
-    mutate(shap_value = -1 * shap_value)
+    group_by(sampleID, on, model_type, feature)
 shap_tmp <- shap_tmp %>% summarize(shap_value = median(shap_value))
 for (mt in c("lasso", "RF")) {
 
