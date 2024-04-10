@@ -3,7 +3,8 @@ library(tidyverse)
 library(here)
 library(ggembl)
 
-dataset <- "Zeller"
+dataset <- "Feng"
+pc <- -4
 
 # load models and clean up
 modelPaths <- list.files(here('data', 'models'), pattern = ".rds", full.names = TRUE)
@@ -158,5 +159,49 @@ for (mt in c("lasso", "RF")) {
         ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack cross mean(abs(shap))\nsorted by mean(abs(shap)) shap")) +
         NULL
 
+    shap_tmp3 <- shap_tmp %>%
+        group_by(feature) %>%
+        summarize(frac_pos = mean(shap_value > 0)) %>%
+        arrange(desc(frac_pos))
+
     ggsave(plot = plot, filename = here('plots', str_c(mt, "__", dataset, '__shap_values_boxplot_', '.pdf')), width = 5, height = 5)
 }
+
+
+# For simplicity, let's move on with RF on testing data
+more_plot_data <- shap_tmp %>%
+    filter(model_type == "RF", on == "test\nset")
+
+more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
+    group_by(feature) %>%
+    summarize(n = mean(abs(shap_value))) %>%
+    arrange(desc(n)) %>%
+    pull(feature))
+
+more_plot_data <- more_plot_data %>%
+    inner_join(more_plot_data %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value))) %>%
+        arrange(desc(n)) %>%
+        head(10), by = "feature")
+
+more_plot_data <- more_plot_data %>%
+    left_join(
+        profiles %>%
+            select(profile) %>%
+            unnest() %>%
+            distinct() %>%
+            pivot_longer(-c(sampleID, Condition)) %>%
+            rename(feature = name, log10relAb = value), by = c('sampleID', "feature"))
+
+plot <- ggplot() +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value), position = position_jitter(height = 0, width = 0.25), color = 'black') +
+    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, color = log10relAb), position = position_jitter(height = 0, width = 0.25)) +
+    theme_presentation() +
+    coord_flip() +
+    ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack cross mean(abs(shap))\nsorted by mean(abs(shap)) shap")) +
+    scale_color_continuous(low = "blue", high = "red") +
+    NULL
+
+ggsave(plot = plot, filename = here('plots', "Feng_SHAP_vs_relAb.pdf"), width = 5, height = 5)
