@@ -3,11 +3,16 @@ library(mlr3learners)
 library(mlr3)
 library(tidyverse)
 library(here)
+library(ggembl)
 
 profiles <- read.table(here('data/Profiles.all.samples.tsv'), sep = "\t", check.names = F)
 meta <- read.table(here('data/Metadata.all.samples.tsv'), sep = "\t", check.names = F)
 
-meta <- meta %>% filter(Cohort == "Zeller")
+# dataset <- "Zeller"
+dataset <- "Feng"
+
+meta <- meta %>% filter(Cohort == dataset)
+# meta <- meta %>% filter(Cohort == "Feng")
 
 profiles <- profiles[, colnames(profiles) %in% rownames(meta)]
 profiles <- profiles[, match(rownames(meta), colnames(profiles))]
@@ -28,13 +33,14 @@ profiles <- profiles %>%
         inner_join(data.frame(Condition = c("CRC", "CTR"))), by = "sampleID") %>%
     column_to_rownames("sampleID")
 
-profiles$Condition <- as.factor(profiles$Condition)
+# profiles$Condition <- as.factor(profiles$Condition)
+profiles$Condition <- factor(profiles$Condition, levels = c("CTR", "CRC"))
 colnames(profiles) <- make.names(colnames(profiles))
 
-rf <- lrn("classif.ranger", predict_type = "prob")
+rf <- lrn("classif.ranger", predict_type = "prob", importance = "impurity")
 lasso <- lrn("classif.cv_glmnet", alpha = 1, predict_type = 'prob')
 
-set.seed(12321)
+
 numFolds <- 5
 numRepeats <- 5
 
@@ -53,10 +59,19 @@ numRepeats <- 5
 # rf_learners <- rf_eval$learners
 # lasso_learners <- lasso_eval$learners
 
-cv <-  rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
+set.seed(12321)
+cv <- rsmp("repeated_cv", folds = numFolds, repeats = numRepeats)
+set.seed(12321)
 cv$instantiate(as_task_classif(profiles, target = "Condition"))
 
-for (foldRepeatIndex in 1:(numFolds*numRepeats)){
+rf_aucs <- c()
+lasso_aucs <- c()
+rfs <- list()
+lassos <- list()
+
+
+
+for (foldRepeatIndex in 1:(numFolds * numRepeats)) {
     print(foldRepeatIndex)
     foldIndex <- cv$folds(foldRepeatIndex)
     repeatIndex <- cv$repeats(foldRepeatIndex)
@@ -67,14 +82,25 @@ for (foldRepeatIndex in 1:(numFolds*numRepeats)){
     rf$train(tasky)
     lasso$train(tasky)
 
-    write_tsv(training_data %>% 
+    rf_aucs[length(rf_aucs) + 1] <- rf$predict_newdata(test_data)$score(msr('classif.auc'))
+    lasso_aucs[length(lasso_aucs) + 1] <- lasso$predict_newdata(test_data)$score(msr('classif.auc'))
+
+    rfs[[length(rfs) + 1]] <- rf
+    lassos[[length(lassos) + 1]] <- lasso
+
+
+    write_tsv(training_data %>%
         rownames_to_column('sampleID') %>%
-        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("training_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
-    write_tsv(test_data  %>% 
+        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("training_data_fold", foldIndex, "__repeat_", repeatIndex, "__", dataset, sep = ""), ".tsv")))
+    write_tsv(test_data %>%
         rownames_to_column('sampleID') %>%
-        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, sep = ""), ".tsv")))
-    write_rds(rf, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__RF.rds")))
-    write_rds(lasso, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__lasso.rds")))
+        relocate('sampleID', "Condition"), here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, "__", dataset, sep = ""), ".tsv")))
+    write_rds(rf, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__RF.rds")))
+    write_rds(lasso, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__lasso.rds")))
 }
 
+plot <- ggplot(data = data.frame(aucs = c(rf_aucs, lasso_aucs), model = rep(c("RF", "Lasso"), each = length(rf_aucs)))) +
+    geom_boxplot(aes(x = model, y = aucs)) +
+    theme_publication()
 
+ggsave(plot = plot, filename = here('plots', str_c('aucs_', dataset, '.pdf')), width = 3, height = 3, dpi = 300)

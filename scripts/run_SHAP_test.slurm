@@ -1,7 +1,6 @@
 #!/bin/bash -e
 #SBATCH -A zeller
 #SBATCH --time=0-04:00:00
-## Looks like we need more than 100 GB of ram for the analysis...
 #SBATCH --mem=8G
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks=1
