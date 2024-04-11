@@ -3,7 +3,7 @@ library(tidyverse)
 library(here)
 library(ggembl)
 
-dataset <- "Feng"
+dataset <- "Zeller"
 pc <- -4
 
 # load models and clean up
@@ -168,8 +168,11 @@ for (mt in c("lasso", "RF")) {
 
 
 # For simplicity, let's move on with RF on testing data
+
+
+mt <- "RF"
 more_plot_data <- shap_tmp %>%
-    filter(model_type == "RF", on == "test\nset")
+    filter(model_type == mt, on == "training\nset")
 
 more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
     group_by(feature) %>%
@@ -183,6 +186,7 @@ more_plot_data <- more_plot_data %>%
         summarize(n = mean(abs(shap_value))) %>%
         arrange(desc(n)) %>%
         head(10), by = "feature")
+l <- levels(more_plot_data$feature)
 
 more_plot_data <- more_plot_data %>%
     left_join(
@@ -193,14 +197,34 @@ more_plot_data <- more_plot_data %>%
             pivot_longer(-c(sampleID, Condition)) %>%
             rename(feature = name, log10relAb = value), by = c('sampleID', "feature"))
 
+more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
+
 plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value), position = position_jitter(height = 0, width = 0.25), color = 'black') +
-    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, color = log10relAb), position = position_jitter(height = 0, width = 0.25)) +
+    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
+    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25)) +
     theme_presentation() +
     coord_flip() +
-    ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack cross mean(abs(shap))\nsorted by mean(abs(shap)) shap")) +
+    ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
     scale_color_continuous(low = "blue", high = "red") +
+    scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
     NULL
 
-ggsave(plot = plot, filename = here('plots', "Feng_SHAP_vs_relAb.pdf"), width = 5, height = 5)
+ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb.pdf")), width = 5, height = 5)
+
+for (f in c("Fusobacterium", "Parvimonas", "Peptostreptococcus", "Porphyromonas", "CAG.41", "Anaerostipes", "Eubacterium_G")) {
+    print(str_c("Processing feature: ", f))
+
+    tmp <- more_plot_data %>%
+        filter(feature == f)
+
+    plot <- ggplot() +
+        geom_hline(yintercept = 0) +
+        geom_point(data = tmp, aes(x = log10relAb, y = shap_value)) +
+        theme_presentation() +
+        ggtitle(f)
+
+
+    ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_SHAP_vs_relAb_scatter_", f, ".pdf")), width = 2.5, height = 2.8)
+
+}
