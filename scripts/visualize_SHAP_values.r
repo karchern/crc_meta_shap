@@ -203,12 +203,20 @@ plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
     geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25)) +
+    geom_point(data = more_plot_data %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value))), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+    geom_point(data = more_plot_data %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value))), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
     theme_presentation() +
     coord_flip() +
     ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
     scale_color_continuous(low = "blue", high = "red") +
     scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
-    NULL
+    NULL +
+    ylab("SHAP value") +
+    xlab("Genus")
 
 ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb.pdf")), width = 5, height = 5)
 
