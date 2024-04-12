@@ -148,10 +148,16 @@ for (mt in c("RF", "lasso")) {
         pull(feature))
     plot <- ggplot(data = shap_tmp2, aes(x = sampleID, y = shap_value, fill = resampling)) +
         theme_presentation() +
-        facet_grid(feature ~ .) +
+        facet_wrap(~feature, ncol = 2) +
         geom_boxplot() +
         geom_abline(intercept = 0, slope = 0, color = "red", linetype = 'dashed') +
-        ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_shap_values_boxplot_by_resampling.pdf")), width = 10, height = 15)
+        theme(
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank()
+        ) +
+        ylab("SHAP value") +
+        xlab("Samples")
+    ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_shap_values_boxplot_by_resampling.pdf")), width = 12, height = 8)
 }
 
 
