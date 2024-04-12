@@ -28,16 +28,17 @@ set.seed(11323)
 
 # Load model
 lasso_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__lasso.rds")))
-RF_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__RF.rds")))
+# RF_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__RF.rds")))
 
-models <- list("RF" = RF_model, "lasso" = lasso_model)
+# models <- list("RF" = RF_model, "lasso" = lasso_model)
+models <- list("lasso" = lasso_model)
 
-training_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("training_data_fold", f_id, "__repeat_", r_id, '__', dataset, ".tsv")))
+# training_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("training_data_fold", f_id, "__repeat_", r_id, '__', dataset, ".tsv")))
 testing_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("test_data_fold", f_id, "__repeat_", r_id, '__', dataset, ".tsv")))
 
-profiles_training <- training_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
+# profiles_training <- training_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
 profiles_testing <- testing_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
-training_labels <- training_data_and_labels %>% select(sampleID, Condition)
+# training_labels <- training_data_and_labels %>% select(sampleID, Condition)
 testing_labels <- testing_data_and_labels %>% select(sampleID, Condition)
 
 if (on_what == "training") {
