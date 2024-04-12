@@ -22,7 +22,7 @@ models <- models %>%
     mutate(resampling = str_split_fixed(path, "__", n = 4)[, 3]) %>%
     mutate(resampling = str_replace(resampling, "repeat_", "")) %>%
     mutate(resampling = as.numeric(resampling)) %>%
-    mutate(model_type = str_split_fixed(path, "__", n = 5)[, 4]) %>%
+    mutate(model_type = str_split_fixed(path, "__", n = 6)[, 5]) %>%
     mutate(model_type = str_replace(model_type, ".rds", "")) %>%
     select(-raw_path)
 
@@ -106,6 +106,55 @@ shap_tmp <- shap %>%
     # for training folds, I get  4 shap values (in 5x cv) per model and resampling
     # In any case, take the median shap value for each sampleID
     group_by(sampleID, on, model_type, feature)
+
+# Understand mean/variance relationship of test-sample shap values over resampling rounds
+
+lel <- shap_tmp %>%
+    filter(on == "test\nset") %>%
+    group_by(sampleID, feature, model_type) %>%
+    summarize(`mean(shap)\n(over resampled models)` = mean(shap_value), `var(shap)\n(over resampled models)` = var(shap_value))
+
+ggsave(plot = ggplot(data = lel,
+    aes(x = log10(abs(`mean(shap)\n(over resampled models)`)), y = log10(`var(shap)\n(over resampled models)`))) +
+    # geom_point() +
+    # geom_hex() +
+    stat_density_2d(aes(fill = after_stat(level)), geom = "polygon") +
+    facet_grid(. ~ model_type) +
+    xlim(c(-8, -2)) +
+    ylim(c(-17, -2)) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = 'solid') +
+    geom_abline(intercept = -1, slope = 1, color = "black", linetype = 'dashed', alpha = 0.8) +
+    geom_abline(intercept = -2, slope = 1, color = "black", linetype = 'dashed', alpha = 0.6) +
+    geom_abline(intercept = -3, slope = 1, color = "black", linetype = 'dashed', alpha = 0.4) +
+    geom_abline(intercept = -4, slope = 1, color = "black", linetype = 'dashed', alpha = 0.2) +
+    geom_abline(intercept = -5, slope = 1, color = "black", linetype = 'dashed', alpha = 0.1) +
+    ggtitle(str_c("Dataset: ", dataset, "\nSHAP values mean vs variance\nover resampling rounds\nlog10 transformed\nabs of negative shap values were taken")) +
+    theme_publication(), filename = here('plots', str_c(dataset, "_shap_mean_vs_var.pdf")), width = 5, height = 3)
+
+
+
+for (mt in c("RF", "lasso")) {
+    shap_tmp2 <- shap_tmp %>% filter(model_type == mt)
+    shap_tmp2 <- shap_tmp2 %>%
+        inner_join(shap_tmp2 %>%
+            group_by(feature, model_type) %>%
+            summarize(n = mean(abs(shap_value))) %>%
+            arrange(desc(n)) %>%
+            head(10), by = c("feature", "model_type"))
+    shap_tmp2$feature <- factor(shap_tmp2$feature, levels = shap_tmp2 %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value))) %>%
+        arrange(desc(n)) %>%
+        pull(feature))
+    plot <- ggplot(data = shap_tmp2, aes(x = sampleID, y = shap_value, fill = resampling)) +
+        theme_presentation() +
+        facet_grid(feature ~ .) +
+        geom_boxplot() +
+        geom_abline(intercept = 0, slope = 0, color = "red", linetype = 'dashed') +
+        ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_shap_values_boxplot_by_resampling.pdf")), width = 10, height = 15)
+}
+
+
 shap_tmp <- shap_tmp %>% summarize(shap_value = median(shap_value))
 for (mt in c("lasso", "RF")) {
 
@@ -169,7 +218,6 @@ for (mt in c("lasso", "RF")) {
 
 # For simplicity, let's move on with RF on testing data
 
-
 mt <- "RF"
 more_plot_data <- shap_tmp %>%
     filter(model_type == mt, on == "training\nset")
@@ -199,20 +247,29 @@ more_plot_data <- more_plot_data %>%
 
 more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
 
+# Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
+more_plot_data <- more_plot_data %>%
+    left_join(more_plot_data %>%
+        group_by(feature) %>%
+        summarize(
+            spearman = cor(shap_value, log10relAb, method = "spearman")
+        ), by = 'feature') %>%
+    mutate(spearman_sign = ifelse(spearman > 0, 1, -1))
+
 plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
-    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25)) +
+    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
     geom_point(data = more_plot_data %>%
         group_by(feature) %>%
-        summarize(n = mean(abs(shap_value))), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
     geom_point(data = more_plot_data %>%
         group_by(feature) %>%
-        summarize(n = mean(abs(shap_value))), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
+        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
     theme_presentation() +
     coord_flip() +
-    ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
-    scale_color_continuous(low = "blue", high = "red") +
+    # ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
+    scale_color_continuous(low = "blue", high = "yellow") +
     scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
     NULL +
     ylab("SHAP value") +
@@ -228,11 +285,32 @@ for (f in c("Fusobacterium", "Parvimonas", "Peptostreptococcus", "Porphyromonas"
 
     plot <- ggplot() +
         geom_hline(yintercept = 0) +
-        geom_point(data = tmp, aes(x = log10relAb, y = shap_value)) +
+        geom_point(data = tmp, aes(x = log10relAb, y = shap_value, color = Condition), alpha = 0.3) +
         theme_presentation() +
         ggtitle(f)
 
 
-    ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_SHAP_vs_relAb_scatter_", f, ".pdf")), width = 2.5, height = 2.8)
+    ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_SHAP_vs_relAb_scatter_", f, ".pdf")), width = 3.75, height = 2.8)
 
 }
+
+plot <- ggplot() +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    #    geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
+    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
+    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+    geom_point(data = more_plot_data %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+    geom_point(data = more_plot_data %>%
+        group_by(feature) %>%
+        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
+    theme_presentation() +
+    coord_flip() +
+    scale_color_continuous(low = "blue", high = "yellow") +
+    scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
+    NULL +
+    ylab("SHAP value") +
+    xlab("Genus")
+
+ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_CRC_CTR.pdf")), width = 5, height = 4)
