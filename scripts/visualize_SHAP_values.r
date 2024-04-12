@@ -24,7 +24,12 @@ models <- models %>%
     mutate(resampling = as.numeric(resampling)) %>%
     mutate(model_type = str_split_fixed(path, "__", n = 6)[, 5]) %>%
     mutate(model_type = str_replace(model_type, ".rds", "")) %>%
-    select(-raw_path)
+    select(-raw_path) %>%
+    mutate(beta_values = map(model_object, \(x) {
+        lam_min_index <- x$model$index['1se', ]
+        betas <- x$model$glmnet.fit$beta[, lam_min_index]
+        return(as.data.frame(betas) %>% rownames_to_column('feature'))
+    }))
 
 
 # load shap values and clean up
@@ -128,7 +133,9 @@ ggsave(plot = ggplot(data = lel,
     geom_abline(intercept = -3, slope = 1, color = "black", linetype = 'dashed', alpha = 0.4) +
     geom_abline(intercept = -4, slope = 1, color = "black", linetype = 'dashed', alpha = 0.2) +
     geom_abline(intercept = -5, slope = 1, color = "black", linetype = 'dashed', alpha = 0.1) +
-    ggtitle(str_c("Dataset: ", dataset, "\nSHAP values mean vs variance\nover resampling rounds\nlog10 transformed\nabs of negative shap values were taken")) +
+    ggtitle(str_c("Dataset: ", dataset, "\nSHAP values mean vs variance\nover resampling rounds")) +
+    xlab("log10(abs(mean(shap)))\nover resampled models") +
+    ylab("log10(var(shap))\nover resampled models") +
     theme_publication(), filename = here('plots', str_c(dataset, "_shap_mean_vs_var.pdf")), width = 5, height = 3)
 
 
@@ -320,3 +327,43 @@ plot <- ggplot() +
     xlab("Genus")
 
 ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_CRC_CTR.pdf")), width = 5, height = 4)
+
+
+models2 <- models %>%
+    filter(model_type == "lasso") %>%
+    select(fold, resampling, beta_values) %>%
+    unnest() %>%
+    rename(beta_value = betas) %>%
+    mutate(beta_value = -1 * beta_value) %>%
+    inner_join(
+        shap %>%
+            filter(model_type == 'lasso', on == "test\nset") %>%
+            select(fold, resampling, on, model_type, shap_values_long) %>%
+            unnest(shap_values_long) %>%
+            # I evalaute shap on training and testing
+            # For testing folds, I get one shap value per model and resampling
+            # for training folds, I get  4 shap values (in 5x cv) per model and resampling
+            # In any case, take the median shap value for each sampleID
+            group_by(sampleID, on, model_type, feature) %>%
+            group_by(fold, resampling, feature, on, model_type) %>%
+            summarize(shap_value = median(shap_value)),
+        by = c("fold", "resampling", "feature")) %>%
+    arrange(desc(beta_value))
+
+models2$feature <- factor(models2$feature, levels = models2 %>%
+    group_by(feature) %>%
+    summarize(n = median(beta_value)) %>%
+    arrange(desc(n)) %>%
+    pull(feature))
+
+ggsave(plot = ggplot(
+    data = models2 %>%
+        filter(feature %in% levels(feature)[1:10])
+) +
+    geom_boxplot(aes(x = feature, y = beta_value)) +
+    geom_jitter(aes(x = feature, y = beta_value), alpha = 0.3) +
+    theme_publication() +
+    coord_flip() +
+    xlab("Genus") +
+    ylab("Lasso beta value")
+, filename = here('plots', str_c(dataset, "_lasso_beta_vs_shap.pdf")), width = 3, height = 3)
