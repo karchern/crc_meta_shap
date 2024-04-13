@@ -10,11 +10,11 @@ library(here)
 
 if (interactive()) {
     args <- list()
-    r_id <- 3
+    r_id <- 1
     f_id <- 5
-    on_what <- "training"
-    which_model <- "RF"
-    dataset <- 'Zeller'
+    on_what <- "testing"
+    which_model <- "lasso"
+    dataset <- 'Quinten'
 } else {
     args <- commandArgs(trailingOnly = TRUE)
     r_id <- as.integer(args[1])
