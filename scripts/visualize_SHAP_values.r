@@ -124,7 +124,8 @@ shap_tmp <- shap
 # Understand mean/variance relationship of test-sample shap values over resampling rounds
 
 lel <- shap_tmp %>%
-    filter(on == "test\nset") %>%
+    # filter(on == "test\nset") %>%
+    filter(on == "training\nset") %>%
     group_by(sampleID, feature, model_type) %>%
     summarize(`mean(shap)\n(over resampled models)` = mean(shap_value), `var(shap)\n(over resampled models)` = var(shap_value))
 
@@ -245,7 +246,8 @@ for (mt in c("lasso")) {
 # mt <- "RF"
 mt <- "lasso"
 more_plot_data <- shap_tmp %>%
-    filter(model_type == mt, on == "test\nset")
+    #filter(model_type == mt, on == "test\nset")
+    filter(model_type == mt, on == "training\nset")
 
 more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
     group_by(feature) %>%
