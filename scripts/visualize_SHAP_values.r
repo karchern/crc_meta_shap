@@ -342,10 +342,10 @@ plot1 <- ggplot() +
     # geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
     # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
     # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
-    geom_point(data = more_plot_data %>%
+    geom_jitter(data = more_plot_data %>%
         rename(`CAZy copy number` = feature_value) %>%
-        mutate(`CAZy copy number` = `CAZy copy number` + 1), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = `CAZy copy number`), position = position_jitterdodge(jitter.width = 0.2), alpha = 0.3) +
-    geom_point(data = more_plot_data %>%
+        mutate(`CAZy copy number` = `CAZy copy number` + 1), aes(x = feature, y = shap_value, color = `CAZy copy number`), alpha = 0.3) +
+    geom_jitter(data = more_plot_data %>%
         group_by(feature, spearman_sign) %>%
         summarize(n = mean(abs(shap_value))) %>%
         mutate(n = n * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
@@ -424,13 +424,13 @@ tmp <- more_plot_data %>%
     group_by(feature, spearman_sign) %>%
     summarize(n = mean(abs(shap_value))) %>%
     mutate(n = n * spearman_sign) %>%
-    inner_join(readRDS('/g/scb/zeller/karcher/SHAP/data/Nic_siamcat_Mesnage_2023_before_after_cazy_assocations.RDS') %>% 
-    select(fc, cazyme_fam) %>% 
-    as_tibble(), by = c("feature" = "cazyme_fam"))
+    inner_join(readRDS('/g/scb/zeller/karcher/SHAP/data/Nic_siamcat_Mesnage_2023_before_after_cazy_assocations.RDS') %>%
+        select(fc, cazyme_fam) %>%
+        as_tibble(), by = c("feature" = "cazyme_fam"))
 
-plot <-  ggplot(aes(x = n, y = fc), data = tmp) +
+plot <- ggplot(aes(x = n, y = fc), data = tmp) +
     geom_point() +
-    theme_presentation() 
+    theme_presentation()
 
 ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control_wilcox.pdf")), width = 5, height = 5)
 
