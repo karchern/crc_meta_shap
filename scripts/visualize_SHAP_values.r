@@ -346,11 +346,13 @@ plot1 <- ggplot() +
         rename(`CAZy copy number` = feature_value) %>%
         mutate(`CAZy copy number` = `CAZy copy number` + 1), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = `CAZy copy number`), position = position_jitterdodge(jitter.width = 0.2), alpha = 0.3) +
     geom_point(data = more_plot_data %>%
-        group_by(feature) %>%
-        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+        group_by(feature, spearman_sign) %>%
+        summarize(n = mean(abs(shap_value))) %>%
+        mutate(n = n * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
     geom_point(data = more_plot_data %>%
-        group_by(feature) %>%
-        summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
+        group_by(feature, spearman_sign) %>%
+        summarize(n = mean(abs(shap_value))) %>%
+        mutate(n = n * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
     theme_presentation() +
     coord_flip() +
     scale_color_continuous(low = "blue", high = "yellow", trans = 'log10') +
@@ -414,6 +416,25 @@ plot3 <- ggplot(data = data_for_plot_3) +
     NULL
 
 ggsave(plot = plot1 + plot2 + plot3 + plot_layout(width = c(2, 1.75, 1.5), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control.pdf")), width = 10, height = 11)
+
+
+# Comparing SHAP values to single-feature wilcox values
+# BUT COMPARING SIMPLY CAZyme abundance changes before and after fasting
+tmp <- more_plot_data %>%
+    group_by(feature, spearman_sign) %>%
+    summarize(n = mean(abs(shap_value))) %>%
+    mutate(n = n * spearman_sign) %>%
+    inner_join(readRDS('/g/scb/zeller/karcher/SHAP/data/Nic_siamcat_Mesnage_2023_before_after_cazy_assocations.RDS') %>% 
+    select(fc, cazyme_fam) %>% 
+    as_tibble(), by = c("feature" = "cazyme_fam"))
+
+plot <-  ggplot(aes(x = n, y = fc), data = tmp) +
+    geom_point() +
+    theme_presentation() 
+
+ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control_wilcox.pdf")), width = 5, height = 5)
+
+cor(tmp$n, tmp$fc, method = 'spearman')
 
 # Adding code to compare SHAP values to single-feature wilcox values
 data <- profiles %>%
