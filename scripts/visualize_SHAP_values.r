@@ -415,44 +415,33 @@ plot3 <- ggplot(data = data_for_plot_3) +
 
 ggsave(plot = plot1 + plot2 + plot3 + plot_layout(width = c(2, 1.75, 1.5), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control.pdf")), width = 10, height = 11)
 
-
-
-models2 <- models %>%
-    filter(model_type == "lasso") %>%
-    select(fold, resampling, beta_values) %>%
+# Adding code to compare SHAP values to single-feature wilcox values
+data <- profiles %>%
+    filter(resampling == 1) %>%
     unnest() %>%
-    rename(beta_value = betas) %>%
-    mutate(beta_value = -1 * beta_value) %>%
-    inner_join(
-        shap %>%
-            ungroup() %>%
-            filter(model_type == 'lasso', on == "test\nset") %>%
-            select(fold, resampling, on, model_type, shap_values_long) %>%
-            unnest(shap_values_long) %>%
-            # I evalaute shap on training and testing
-            # For testing folds, I get one shap value per model and resampling
-            # for training folds, I get  4 shap values (in 5x cv) per model and resampling
-            # In any case, take the median shap value for each sampleID
-            group_by(sampleID, on, model_type, feature) %>%
-            group_by(fold, resampling, feature, on, model_type) %>%
-            summarize(shap_value = median(shap_value)),
-        by = c("fold", "resampling", "feature")) %>%
-    arrange(desc(beta_value))
+    select(-fold, -resampling, -on) %>%
+    select(-sampleID)
 
-models2$feature <- factor(models2$feature, levels = models2 %>%
-    group_by(feature) %>%
-    summarize(n = median(beta_value)) %>%
-    arrange(desc(n)) %>%
-    pull(feature))
+cond <- data$Condition
+data$Condition <- NULL
 
-ggsave(plot = ggplot(
-    data = models2 %>%
-        filter(feature %in% levels(feature)[1:10])
-) +
-    geom_boxplot(aes(x = feature, y = beta_value)) +
-    geom_jitter(aes(x = feature, y = beta_value), alpha = 0.3) +
-    theme_publication() +
-    coord_flip() +
-    xlab("Genus") +
-    ylab("Lasso beta value")
-, filename = here('plots', str_c(dataset, "_lasso_beta_vs_shap.pdf")), width = 3, height = 3)
+wilcox_results <- list()
+for (fam in colnames(data)) {
+    wilcox_results[[fam]] <- wilcox.test(data[[fam]] ~ cond)
+}
+
+enframe(wilcox_results) %>%
+    rename(family = name, wilcox_test = value) %>%
+    mutate(p = map_dbl(wilcox_test, \(x) x$p.value)) %>%
+    arrange(p) %>%
+    head(50) %>%
+    select(family) %>%
+    mutate(source = 'wilcox') %>%
+    full_join(data.frame(family = levels(more_plot_data$feature)) %>% mutate(source = 'shap'), by = 'family', suffix = c("_wilcox", "_shap")) %>%
+    mutate(overlap = case_when(
+        !is.na(source_wilcox) & !is.na(source_shap) ~ "both",
+        !is.na(source_wilcox) ~ "wilcox",
+        !is.na(source_shap) ~ "shap"
+    )) %>%
+    group_by(overlap) %>%
+    tally()
