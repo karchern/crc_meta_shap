@@ -246,7 +246,7 @@ for (mt in c("lasso")) {
 # mt <- "RF"
 mt <- "lasso"
 more_plot_data <- shap_tmp %>%
-    #filter(model_type == mt, on == "test\nset")
+    # filter(model_type == mt, on == "test\nset")
     filter(model_type == mt, on == "training\nset")
 
 more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
@@ -254,14 +254,6 @@ more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data
     summarize(n = mean(abs(shap_value))) %>%
     arrange(desc(n)) %>%
     pull(feature))
-
-more_plot_data <- more_plot_data %>%
-    inner_join(more_plot_data %>%
-        group_by(feature) %>%
-        summarize(n = mean(abs(shap_value))) %>%
-        arrange(desc(n)) %>%
-        head(25), by = "feature")
-l <- levels(more_plot_data$feature)
 
 more_plot_data <- more_plot_data %>%
     left_join(
@@ -278,7 +270,7 @@ more_plot_data <- more_plot_data %>%
         Condition == "Before" ~ "Before fasting"
     ))
 
-more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
+# more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
 
 # Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
 more_plot_data <- more_plot_data %>%
@@ -288,6 +280,23 @@ more_plot_data <- more_plot_data %>%
             spearman = cor(shap_value, feature_value, method = "spearman")
         ), by = 'feature') %>%
     mutate(spearman_sign = ifelse(spearman > 0, 1, -1))
+
+
+l1 <- more_plot_data %>%
+    group_by(feature) %>%
+    summarize(n = mean(abs(shap_value) * spearman_sign)) %>%
+    arrange(desc(n)) %>%
+    head(25) %>%
+    pull(feature)
+l2 <- more_plot_data %>%
+    group_by(feature) %>%
+    summarize(n = mean(abs(shap_value) * spearman_sign)) %>%
+    arrange(desc(n)) %>%
+    tail(25) %>%
+    pull(feature)
+more_plot_data <- more_plot_data %>%
+    inner_join(data.frame(feature = c(l1, l2)), by = "feature")
+more_plot_data$feature <- factor(more_plot_data$feature, levels = c(l1, l2))
 
 plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
@@ -404,7 +413,7 @@ plot3 <- ggplot(data = data_for_plot_3) +
     scale_fill_manual(values = c("TRUE" = "black", "FALSE" = "lightgrey")) +
     NULL
 
-ggsave(plot = plot1 + plot2 + plot3 + plot_layout(width = c(2, 1.75, 1.5), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control.pdf")), width = 10, height = 8.5)
+ggsave(plot = plot1 + plot2 + plot3 + plot_layout(width = c(2, 1.75, 1.5), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control.pdf")), width = 10, height = 11)
 
 
 
