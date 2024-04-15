@@ -426,13 +426,22 @@ cond <- data$Condition
 data$Condition <- NULL
 
 wilcox_results <- list()
+gfcs <- list()
 for (fam in colnames(data)) {
     wilcox_results[[fam]] <- wilcox.test(data[[fam]] ~ cond)
+    gfcs[[fam]] <- CalcGFC(data[cond == "Before", fam, drop = T], data[cond == "After fasting", fam, drop = T])
+}
+
+CalcGFC <- function(x.pos, x.neg, probs.fc = seq(.05, .95, .05)) {
+    q.p <- quantile(x.pos, probs = probs.fc)
+    q.n <- quantile(x.neg, probs = probs.fc)
+    return(sum(q.p - q.n) / length(q.p))
 }
 
 enframe(wilcox_results) %>%
     rename(family = name, wilcox_test = value) %>%
     mutate(p = map_dbl(wilcox_test, \(x) x$p.value)) %>%
+    mutate(gfcs = unlist(gfcs)) %>%
     arrange(p) %>%
     head(50) %>%
     select(family) %>%
@@ -445,3 +454,50 @@ enframe(wilcox_results) %>%
     )) %>%
     group_by(overlap) %>%
     tally()
+
+wilcox_results_fin <- enframe(wilcox_results) %>%
+    rename(family = name, wilcox_test = value) %>%
+    mutate(p = map_dbl(wilcox_test, \(x) x$p.value)) %>%
+    mutate(gfcs = unlist(gfcs)) %>%
+    arrange(p) %>%
+    mutate(p.adj = p.adjust(p, method = "BH")) %>%
+    filter(p.adj < 0.001) %>%
+    mutate(positive = gfcs < 0) %>%
+    group_by(positive) %>%
+    nest() %>%
+    mutate(data = map2(data, positive, function(da, po) {
+        if (po) {
+            return(da %>% arrange(gfcs) %>% head(25))
+        } else {
+            return(da %>% arrange(gfcs) %>% tail(25))
+        }
+    })) %>%
+    unnest()
+# .. get wilcox-based ranking.
+data_for_plot_3 <- expand_subtrate_classes_into_matrix(subtrate_info_for_plot_3$FUNCTION_AT_DESTINATION_1, subtrate_info_for_plot_3$feature) %>%
+    rownames_to_column('substrate_class') %>%
+    pivot_longer(-substrate_class) %>%
+    rename() %>%
+    rename(
+        family = name,
+        Substrate = value) %>%
+    mutate(Substrate = Substrate == 1) %>%
+    # inner_join(data.frame(feature = unique(more_plot_data$feature)), by = c('family' = 'feature')) %>%
+    inner_join(data.frame(feature = wilcox_results_fin$family), by = c('family' = 'feature')) %>%
+    # mutate(family = factor(family, levels = levels(more_plot_data$feature))) %>%
+    mutate(family = factor(family, levels = wilcox_results_fin$family)) %>%
+    mutate(substrate_class = factor(
+        substrate_class,
+        levels = c(unique(substrate_class)[!unique(substrate_class) %in% c("NA", "Other", "Unknown")], c("NA", "Other", "Unknown"))))
+
+plot3 <- ggplot(data = data_for_plot_3) +
+    geom_tile(aes(x = substrate_class, y = family, fill = Substrate)) +
+    theme_presentation() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    ylab("CAZy family") +
+    scale_fill_manual(values = c("TRUE" = "black", "FALSE" = "lightgrey")) +
+    NULL
+
+ggsave(plot = plot3 + plot_layout(width = c(2, 1.75, 1.5), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_case_control_wilcox_ranking_only_substrate_ranking_plot.pdf")), width = 5.5, height = 11)
