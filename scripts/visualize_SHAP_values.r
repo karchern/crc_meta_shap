@@ -448,16 +448,16 @@ data$Condition <- NULL
 
 wilcox_results <- list()
 gfcs <- list()
-for (fam in colnames(data)) {
-    wilcox_results[[fam]] <- wilcox.test(data[[fam]] ~ cond)
-    gfcs[[fam]] <- CalcGFC(data[cond == "Before", fam, drop = T], data[cond == "After fasting", fam, drop = T])
-}
-
 CalcGFC <- function(x.pos, x.neg, probs.fc = seq(.05, .95, .05)) {
     q.p <- quantile(x.pos, probs = probs.fc)
     q.n <- quantile(x.neg, probs = probs.fc)
     return(sum(q.p - q.n) / length(q.p))
 }
+for (fam in colnames(data)) {
+    wilcox_results[[fam]] <- wilcox.test(data[[fam]] ~ cond)
+    gfcs[[fam]] <- CalcGFC(data[cond == "Before", fam, drop = T], data[cond == "After fasting", fam, drop = T])
+}
+
 
 enframe(wilcox_results) %>%
     rename(family = name, wilcox_test = value) %>%
