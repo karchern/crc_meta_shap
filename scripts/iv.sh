@@ -1,100 +1,200 @@
-Rscript run_SHAP_test.r 1 1 training
-Rscript run_SHAP_test.r 1 1 testing
-Rscript run_SHAP_test.r 1 2 training
-Rscript run_SHAP_test.r 1 2 testing
-Rscript run_SHAP_test.r 1 3 training
-Rscript run_SHAP_test.r 1 3 testing
-Rscript run_SHAP_test.r 1 4 training
-Rscript run_SHAP_test.r 1 4 testing
-Rscript run_SHAP_test.r 1 5 training
-Rscript run_SHAP_test.r 1 5 testing
-Rscript run_SHAP_test.r 1 6 training
-Rscript run_SHAP_test.r 1 6 testing
-Rscript run_SHAP_test.r 1 7 training
-Rscript run_SHAP_test.r 1 7 testing
-Rscript run_SHAP_test.r 1 8 training
-Rscript run_SHAP_test.r 1 8 testing
-Rscript run_SHAP_test.r 1 9 training
-Rscript run_SHAP_test.r 1 9 testing
-Rscript run_SHAP_test.r 1 10 training
-Rscript run_SHAP_test.r 1 10 testing
-Rscript run_SHAP_test.r 2 1 training
-Rscript run_SHAP_test.r 2 1 testing
-Rscript run_SHAP_test.r 2 2 training
-Rscript run_SHAP_test.r 2 2 testing
-Rscript run_SHAP_test.r 2 3 training
-Rscript run_SHAP_test.r 2 3 testing
-Rscript run_SHAP_test.r 2 4 training
-Rscript run_SHAP_test.r 2 4 testing
-Rscript run_SHAP_test.r 2 5 training
-Rscript run_SHAP_test.r 2 5 testing
-Rscript run_SHAP_test.r 2 6 training
-Rscript run_SHAP_test.r 2 6 testing
-Rscript run_SHAP_test.r 2 7 training
-Rscript run_SHAP_test.r 2 7 testing
-Rscript run_SHAP_test.r 2 8 training
-Rscript run_SHAP_test.r 2 8 testing
-Rscript run_SHAP_test.r 2 9 training
-Rscript run_SHAP_test.r 2 9 testing
-Rscript run_SHAP_test.r 2 10 training
-Rscript run_SHAP_test.r 2 10 testing
-Rscript run_SHAP_test.r 3 1 training
-Rscript run_SHAP_test.r 3 1 testing
-Rscript run_SHAP_test.r 3 2 training
-Rscript run_SHAP_test.r 3 2 testing
-Rscript run_SHAP_test.r 3 3 training
-Rscript run_SHAP_test.r 3 3 testing
-Rscript run_SHAP_test.r 3 4 training
-Rscript run_SHAP_test.r 3 4 testing
-Rscript run_SHAP_test.r 3 5 training
-Rscript run_SHAP_test.r 3 5 testing
-Rscript run_SHAP_test.r 3 6 training
-Rscript run_SHAP_test.r 3 6 testing
-Rscript run_SHAP_test.r 3 7 training
-Rscript run_SHAP_test.r 3 7 testing
-Rscript run_SHAP_test.r 3 8 training
-Rscript run_SHAP_test.r 3 8 testing
-Rscript run_SHAP_test.r 3 9 training
-Rscript run_SHAP_test.r 3 9 testing
-Rscript run_SHAP_test.r 3 10 training
-Rscript run_SHAP_test.r 3 10 testing
-Rscript run_SHAP_test.r 4 1 training
-Rscript run_SHAP_test.r 4 1 testing
-Rscript run_SHAP_test.r 4 2 training
-Rscript run_SHAP_test.r 4 2 testing
-Rscript run_SHAP_test.r 4 3 training
-Rscript run_SHAP_test.r 4 3 testing
-Rscript run_SHAP_test.r 4 4 training
-Rscript run_SHAP_test.r 4 4 testing
-Rscript run_SHAP_test.r 4 5 training
-Rscript run_SHAP_test.r 4 5 testing
-Rscript run_SHAP_test.r 4 6 training
-Rscript run_SHAP_test.r 4 6 testing
-Rscript run_SHAP_test.r 4 7 training
-Rscript run_SHAP_test.r 4 7 testing
-Rscript run_SHAP_test.r 4 8 training
-Rscript run_SHAP_test.r 4 8 testing
-Rscript run_SHAP_test.r 4 9 training
-Rscript run_SHAP_test.r 4 9 testing
-Rscript run_SHAP_test.r 4 10 training
-Rscript run_SHAP_test.r 4 10 testing
-Rscript run_SHAP_test.r 5 1 training
-Rscript run_SHAP_test.r 5 1 testing
-Rscript run_SHAP_test.r 5 2 training
-Rscript run_SHAP_test.r 5 2 testing
-Rscript run_SHAP_test.r 5 3 training
-Rscript run_SHAP_test.r 5 3 testing
-Rscript run_SHAP_test.r 5 4 training
-Rscript run_SHAP_test.r 5 4 testing
-Rscript run_SHAP_test.r 5 5 training
-Rscript run_SHAP_test.r 5 5 testing
-Rscript run_SHAP_test.r 5 6 training
-Rscript run_SHAP_test.r 5 6 testing
-Rscript run_SHAP_test.r 5 7 training
-Rscript run_SHAP_test.r 5 7 testing
-Rscript run_SHAP_test.r 5 8 training
-Rscript run_SHAP_test.r 5 8 testing
-Rscript run_SHAP_test.r 5 9 training
-Rscript run_SHAP_test.r 5 9 testing
-Rscript run_SHAP_test.r 5 10 training
-Rscript run_SHAP_test.r 5 10 testing
+Rscript run_SHAP_test.r 1 1 training lasso Quinten
+Rscript run_SHAP_test.r 1 1 testing lasso Quinten
+Rscript run_SHAP_test.r 1 2 training lasso Quinten
+Rscript run_SHAP_test.r 1 2 testing lasso Quinten
+Rscript run_SHAP_test.r 1 3 training lasso Quinten
+Rscript run_SHAP_test.r 1 3 testing lasso Quinten
+Rscript run_SHAP_test.r 1 4 training lasso Quinten
+Rscript run_SHAP_test.r 1 4 testing lasso Quinten
+Rscript run_SHAP_test.r 1 5 training lasso Quinten
+Rscript run_SHAP_test.r 1 5 testing lasso Quinten
+Rscript run_SHAP_test.r 1 6 training lasso Quinten
+Rscript run_SHAP_test.r 1 6 testing lasso Quinten
+Rscript run_SHAP_test.r 1 7 training lasso Quinten
+Rscript run_SHAP_test.r 1 7 testing lasso Quinten
+Rscript run_SHAP_test.r 1 8 training lasso Quinten
+Rscript run_SHAP_test.r 1 8 testing lasso Quinten
+Rscript run_SHAP_test.r 1 9 training lasso Quinten
+Rscript run_SHAP_test.r 1 9 testing lasso Quinten
+Rscript run_SHAP_test.r 1 10 training lasso Quinten
+Rscript run_SHAP_test.r 1 10 testing lasso Quinten
+Rscript run_SHAP_test.r 2 1 training lasso Quinten
+Rscript run_SHAP_test.r 2 1 testing lasso Quinten
+Rscript run_SHAP_test.r 2 2 training lasso Quinten
+Rscript run_SHAP_test.r 2 2 testing lasso Quinten
+Rscript run_SHAP_test.r 2 3 training lasso Quinten
+Rscript run_SHAP_test.r 2 3 testing lasso Quinten
+Rscript run_SHAP_test.r 2 4 training lasso Quinten
+Rscript run_SHAP_test.r 2 4 testing lasso Quinten
+Rscript run_SHAP_test.r 2 5 training lasso Quinten
+Rscript run_SHAP_test.r 2 5 testing lasso Quinten
+Rscript run_SHAP_test.r 2 6 training lasso Quinten
+Rscript run_SHAP_test.r 2 6 testing lasso Quinten
+Rscript run_SHAP_test.r 2 7 training lasso Quinten
+Rscript run_SHAP_test.r 2 7 testing lasso Quinten
+Rscript run_SHAP_test.r 2 8 training lasso Quinten
+Rscript run_SHAP_test.r 2 8 testing lasso Quinten
+Rscript run_SHAP_test.r 2 9 training lasso Quinten
+Rscript run_SHAP_test.r 2 9 testing lasso Quinten
+Rscript run_SHAP_test.r 2 10 training lasso Quinten
+Rscript run_SHAP_test.r 2 10 testing lasso Quinten
+Rscript run_SHAP_test.r 3 1 training lasso Quinten
+Rscript run_SHAP_test.r 3 1 testing lasso Quinten
+Rscript run_SHAP_test.r 3 2 training lasso Quinten
+Rscript run_SHAP_test.r 3 2 testing lasso Quinten
+Rscript run_SHAP_test.r 3 3 training lasso Quinten
+Rscript run_SHAP_test.r 3 3 testing lasso Quinten
+Rscript run_SHAP_test.r 3 4 training lasso Quinten
+Rscript run_SHAP_test.r 3 4 testing lasso Quinten
+Rscript run_SHAP_test.r 3 5 training lasso Quinten
+Rscript run_SHAP_test.r 3 5 testing lasso Quinten
+Rscript run_SHAP_test.r 3 6 training lasso Quinten
+Rscript run_SHAP_test.r 3 6 testing lasso Quinten
+Rscript run_SHAP_test.r 3 7 training lasso Quinten
+Rscript run_SHAP_test.r 3 7 testing lasso Quinten
+Rscript run_SHAP_test.r 3 8 training lasso Quinten
+Rscript run_SHAP_test.r 3 8 testing lasso Quinten
+Rscript run_SHAP_test.r 3 9 training lasso Quinten
+Rscript run_SHAP_test.r 3 9 testing lasso Quinten
+Rscript run_SHAP_test.r 3 10 training lasso Quinten
+Rscript run_SHAP_test.r 3 10 testing lasso Quinten
+Rscript run_SHAP_test.r 4 1 training lasso Quinten
+Rscript run_SHAP_test.r 4 1 testing lasso Quinten
+Rscript run_SHAP_test.r 4 2 training lasso Quinten
+Rscript run_SHAP_test.r 4 2 testing lasso Quinten
+Rscript run_SHAP_test.r 4 3 training lasso Quinten
+Rscript run_SHAP_test.r 4 3 testing lasso Quinten
+Rscript run_SHAP_test.r 4 4 training lasso Quinten
+Rscript run_SHAP_test.r 4 4 testing lasso Quinten
+Rscript run_SHAP_test.r 4 5 training lasso Quinten
+Rscript run_SHAP_test.r 4 5 testing lasso Quinten
+Rscript run_SHAP_test.r 4 6 training lasso Quinten
+Rscript run_SHAP_test.r 4 6 testing lasso Quinten
+Rscript run_SHAP_test.r 4 7 training lasso Quinten
+Rscript run_SHAP_test.r 4 7 testing lasso Quinten
+Rscript run_SHAP_test.r 4 8 training lasso Quinten
+Rscript run_SHAP_test.r 4 8 testing lasso Quinten
+Rscript run_SHAP_test.r 4 9 training lasso Quinten
+Rscript run_SHAP_test.r 4 9 testing lasso Quinten
+Rscript run_SHAP_test.r 4 10 training lasso Quinten
+Rscript run_SHAP_test.r 4 10 testing lasso Quinten
+Rscript run_SHAP_test.r 5 1 training lasso Quinten
+Rscript run_SHAP_test.r 5 1 testing lasso Quinten
+Rscript run_SHAP_test.r 5 2 training lasso Quinten
+Rscript run_SHAP_test.r 5 2 testing lasso Quinten
+Rscript run_SHAP_test.r 5 3 training lasso Quinten
+Rscript run_SHAP_test.r 5 3 testing lasso Quinten
+Rscript run_SHAP_test.r 5 4 training lasso Quinten
+Rscript run_SHAP_test.r 5 4 testing lasso Quinten
+Rscript run_SHAP_test.r 5 5 training lasso Quinten
+Rscript run_SHAP_test.r 5 5 testing lasso Quinten
+Rscript run_SHAP_test.r 5 6 training lasso Quinten
+Rscript run_SHAP_test.r 5 6 testing lasso Quinten
+Rscript run_SHAP_test.r 5 7 training lasso Quinten
+Rscript run_SHAP_test.r 5 7 testing lasso Quinten
+Rscript run_SHAP_test.r 5 8 training lasso Quinten
+Rscript run_SHAP_test.r 5 8 testing lasso Quinten
+Rscript run_SHAP_test.r 5 9 training lasso Quinten
+Rscript run_SHAP_test.r 5 9 testing lasso Quinten
+Rscript run_SHAP_test.r 5 10 training lasso Quinten
+Rscript run_SHAP_test.r 5 10 testing lasso Quinten
+Rscript run_SHAP_test.r 6 1 training lasso Quinten
+Rscript run_SHAP_test.r 6 1 testing lasso Quinten
+Rscript run_SHAP_test.r 6 2 training lasso Quinten
+Rscript run_SHAP_test.r 6 2 testing lasso Quinten
+Rscript run_SHAP_test.r 6 3 training lasso Quinten
+Rscript run_SHAP_test.r 6 3 testing lasso Quinten
+Rscript run_SHAP_test.r 6 4 training lasso Quinten
+Rscript run_SHAP_test.r 6 4 testing lasso Quinten
+Rscript run_SHAP_test.r 6 5 training lasso Quinten
+Rscript run_SHAP_test.r 6 5 testing lasso Quinten
+Rscript run_SHAP_test.r 6 6 training lasso Quinten
+Rscript run_SHAP_test.r 6 6 testing lasso Quinten
+Rscript run_SHAP_test.r 6 7 training lasso Quinten
+Rscript run_SHAP_test.r 6 7 testing lasso Quinten
+Rscript run_SHAP_test.r 6 8 training lasso Quinten
+Rscript run_SHAP_test.r 6 8 testing lasso Quinten
+Rscript run_SHAP_test.r 6 9 training lasso Quinten
+Rscript run_SHAP_test.r 6 9 testing lasso Quinten
+Rscript run_SHAP_test.r 6 10 training lasso Quinten
+Rscript run_SHAP_test.r 6 10 testing lasso Quinten
+Rscript run_SHAP_test.r 7 1 training lasso Quinten
+Rscript run_SHAP_test.r 7 1 testing lasso Quinten
+Rscript run_SHAP_test.r 7 2 training lasso Quinten
+Rscript run_SHAP_test.r 7 2 testing lasso Quinten
+Rscript run_SHAP_test.r 7 3 training lasso Quinten
+Rscript run_SHAP_test.r 7 3 testing lasso Quinten
+Rscript run_SHAP_test.r 7 4 training lasso Quinten
+Rscript run_SHAP_test.r 7 4 testing lasso Quinten
+Rscript run_SHAP_test.r 7 5 training lasso Quinten
+Rscript run_SHAP_test.r 7 5 testing lasso Quinten
+Rscript run_SHAP_test.r 7 6 training lasso Quinten
+Rscript run_SHAP_test.r 7 6 testing lasso Quinten
+Rscript run_SHAP_test.r 7 7 training lasso Quinten
+Rscript run_SHAP_test.r 7 7 testing lasso Quinten
+Rscript run_SHAP_test.r 7 8 training lasso Quinten
+Rscript run_SHAP_test.r 7 8 testing lasso Quinten
+Rscript run_SHAP_test.r 7 9 training lasso Quinten
+Rscript run_SHAP_test.r 7 9 testing lasso Quinten
+Rscript run_SHAP_test.r 7 10 training lasso Quinten
+Rscript run_SHAP_test.r 7 10 testing lasso Quinten
+Rscript run_SHAP_test.r 8 1 training lasso Quinten
+Rscript run_SHAP_test.r 8 1 testing lasso Quinten
+Rscript run_SHAP_test.r 8 2 training lasso Quinten
+Rscript run_SHAP_test.r 8 2 testing lasso Quinten
+Rscript run_SHAP_test.r 8 3 training lasso Quinten
+Rscript run_SHAP_test.r 8 3 testing lasso Quinten
+Rscript run_SHAP_test.r 8 4 training lasso Quinten
+Rscript run_SHAP_test.r 8 4 testing lasso Quinten
+Rscript run_SHAP_test.r 8 5 training lasso Quinten
+Rscript run_SHAP_test.r 8 5 testing lasso Quinten
+Rscript run_SHAP_test.r 8 6 training lasso Quinten
+Rscript run_SHAP_test.r 8 6 testing lasso Quinten
+Rscript run_SHAP_test.r 8 7 training lasso Quinten
+Rscript run_SHAP_test.r 8 7 testing lasso Quinten
+Rscript run_SHAP_test.r 8 8 training lasso Quinten
+Rscript run_SHAP_test.r 8 8 testing lasso Quinten
+Rscript run_SHAP_test.r 8 9 training lasso Quinten
+Rscript run_SHAP_test.r 8 9 testing lasso Quinten
+Rscript run_SHAP_test.r 8 10 training lasso Quinten
+Rscript run_SHAP_test.r 8 10 testing lasso Quinten
+Rscript run_SHAP_test.r 9 1 training lasso Quinten
+Rscript run_SHAP_test.r 9 1 testing lasso Quinten
+Rscript run_SHAP_test.r 9 2 training lasso Quinten
+Rscript run_SHAP_test.r 9 2 testing lasso Quinten
+Rscript run_SHAP_test.r 9 3 training lasso Quinten
+Rscript run_SHAP_test.r 9 3 testing lasso Quinten
+Rscript run_SHAP_test.r 9 4 training lasso Quinten
+Rscript run_SHAP_test.r 9 4 testing lasso Quinten
+Rscript run_SHAP_test.r 9 5 training lasso Quinten
+Rscript run_SHAP_test.r 9 5 testing lasso Quinten
+Rscript run_SHAP_test.r 9 6 training lasso Quinten
+Rscript run_SHAP_test.r 9 6 testing lasso Quinten
+Rscript run_SHAP_test.r 9 7 training lasso Quinten
+Rscript run_SHAP_test.r 9 7 testing lasso Quinten
+Rscript run_SHAP_test.r 9 8 training lasso Quinten
+Rscript run_SHAP_test.r 9 8 testing lasso Quinten
+Rscript run_SHAP_test.r 9 9 training lasso Quinten
+Rscript run_SHAP_test.r 9 9 testing lasso Quinten
+Rscript run_SHAP_test.r 9 10 training lasso Quinten
+Rscript run_SHAP_test.r 9 10 testing lasso Quinten
+Rscript run_SHAP_test.r 10 1 training lasso Quinten
+Rscript run_SHAP_test.r 10 1 testing lasso Quinten
+Rscript run_SHAP_test.r 10 2 training lasso Quinten
+Rscript run_SHAP_test.r 10 2 testing lasso Quinten
+Rscript run_SHAP_test.r 10 3 training lasso Quinten
+Rscript run_SHAP_test.r 10 3 testing lasso Quinten
+Rscript run_SHAP_test.r 10 4 training lasso Quinten
+Rscript run_SHAP_test.r 10 4 testing lasso Quinten
+Rscript run_SHAP_test.r 10 5 training lasso Quinten
+Rscript run_SHAP_test.r 10 5 testing lasso Quinten
+Rscript run_SHAP_test.r 10 6 training lasso Quinten
+Rscript run_SHAP_test.r 10 6 testing lasso Quinten
+Rscript run_SHAP_test.r 10 7 training lasso Quinten
+Rscript run_SHAP_test.r 10 7 testing lasso Quinten
+Rscript run_SHAP_test.r 10 8 training lasso Quinten
+Rscript run_SHAP_test.r 10 8 testing lasso Quinten
+Rscript run_SHAP_test.r 10 9 training lasso Quinten
+Rscript run_SHAP_test.r 10 9 testing lasso Quinten
+Rscript run_SHAP_test.r 10 10 training lasso Quinten
+Rscript run_SHAP_test.r 10 10 testing lasso Quinten
