@@ -6,7 +6,7 @@ library(readxl)
 library(patchwork)
 
 
-
+set.seed(1)
 dataset <- "Quinten"
 # pc <- -4
 
