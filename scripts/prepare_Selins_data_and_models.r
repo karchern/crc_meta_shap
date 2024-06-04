@@ -10,6 +10,7 @@ library(here)
 
 # For Selin's 3 types of models, this runs for around 10 minutes
 
+model_type <- 'RF'
 for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin20240604BalancedAndBlocked")) {
 
     dataset_name_path_map <- list(
@@ -21,7 +22,9 @@ for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin2024060
     dataset_name_model_object_map <- list(
         "Selin20240604AllData" = 'models.all.data.rf.v5',
         "Selin20240604Balanced" = 'models.all.data.rf.balanced',
+        # TODO: The 2 lines below are remnant of the fact that Selin by mistake sent me the wrong model. Make sure this is correct for final iteration
         "Selin20240604BalancedAndBlocked" = 'models.all.data.rf.balanced.blocked'
+        #"Selin20240604BalancedAndBlocked" = 'models.all.data.rf.balanced'
     )   
 
     extractFold <- function(siamcatObject, what_fold = NULL) {
@@ -84,9 +87,7 @@ for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin2024060
                 relocate(sampleID, Condition)
 
             write_tsv(test_data, here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, "__", dataset, sep = ""), ".tsv")))
-            # write_rds(rf, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__RF.rds")))
-            # write_rds(lasso, here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__lasso.rds")))
-            write_rds(models_list[[str_c('cv_fold', foldIndex, "_rep", repeatIndex)]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__lasso.rds")))
+            write_rds(models_list[[str_c('cv_fold', foldIndex, "_rep", repeatIndex)]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__", model_type, ".rds")))
         }
     }
 }
