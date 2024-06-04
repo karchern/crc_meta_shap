@@ -2,6 +2,8 @@
 library(tidyverse)
 library(here)
 library(ggembl)
+# Loading the Matrix package seems crucial to avoid some weird error
+library(Matrix)
 
 dataset <- "Zeller"
 pc <- -4
