@@ -1,10 +1,12 @@
 #!/bin/bash -e
 #SBATCH -A zeller
-#SBATCH --time=0-04:00:00
-#SBATCH --mem=8G
+#SBATCH --time=0-96:00:00
+## Looks like we need more than 100 GB of ram for the analysis...
+#SBATCH --mem=64G
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks=1
-#SBATCH --array=1-200
+### The following number might need to be updated!
+#SBATCH --array=1-300
 #SBATCH --error=/scratch/karcher/shap/%a.err
 #SBATCH --output=/scratch/karcher/shap/%a.out
 #SBATCH --job-name=get_shap
