@@ -70,8 +70,8 @@ for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin2024060
     fold_ids <- extractFold(data_raw, what_fold = "testing")
     fold_ids_training <- extractFold(data_raw, what_fold = "training")
 
-    for (foldIndex in 1:10) {
-        for (repeatIndex in 1:10) {
+    for (foldIndex in 1:data_raw@data_split$num.folds) {
+        for (repeatIndex in 1:data_raw@data_split$num.resample) {
             print(repeatIndex)
             # training_data <- profiles[cv$train_set(foldIndex), ]
             # test_data <- profiles[cv$test_set(foldIndex), ]
