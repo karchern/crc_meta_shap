@@ -68,6 +68,7 @@ for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin2024060
     names(models_list) <- n
 
     fold_ids <- extractFold(data_raw, what_fold = "testing")
+    fold_ids_training <- extractFold(data_raw, what_fold = "training")
 
     for (foldIndex in 1:10) {
         for (repeatIndex in 1:10) {
@@ -86,9 +87,22 @@ for (dataset in c("Selin20240604AllData", "Selin20240604Balanced", "Selin2024060
                 inner_join(meta, by = 'sampleID') %>%
                 relocate(sampleID, Condition)
 
+            train_data <- fold_ids_training %>%
+                filter(resamp_id == repeatIndex) %>%
+                filter(fold_id == foldIndex) %>%
+                select(-fold_id, -resamp_id) %>%
+                inner_join(
+                    norm_feat %>%
+                        rownames_to_column('sampleID'),
+                    by = 'sampleID'
+                ) %>%
+                inner_join(meta, by = 'sampleID') %>%
+                relocate(sampleID, Condition)
+
             write_tsv(test_data, here('data', 'fold_info', str_c(str_c("test_data_fold", foldIndex, "__repeat_", repeatIndex, "__", dataset, sep = ""), ".tsv")))
+            write_tsv(train_data, here('data', 'fold_info', str_c(str_c("training_data_fold", foldIndex, "__repeat_", repeatIndex, "__", dataset, sep = ""), ".tsv")))
             write_rds(models_list[[str_c('cv_fold', foldIndex, "_rep", repeatIndex)]], here('data/models', str_c("model__fold_id_", foldIndex, "__repeat_", repeatIndex, "__", dataset, "__", model_type, ".rds")))
+            }
         }
-    }
 }
 
