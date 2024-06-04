@@ -10,11 +10,11 @@ library(here)
 
 if (interactive()) {
     args <- list()
-    r_id <- 3
-    f_id <- 5
-    on_what <- "training"
+    r_id <- 2
+    f_id <- 6
+    on_what <- "testing"
     which_model <- "RF"
-    dataset <- 'Selin20240604AllData'
+    dataset <- 'Selin20240604Balanced'
 } else {
     args <- commandArgs(trailingOnly = TRUE)
     r_id <- as.integer(args[1])
@@ -39,6 +39,12 @@ testing_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("test_data_f
 
 profiles_training <- training_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
 profiles_testing <- testing_data_and_labels %>% select(-Condition, -sampleID) %>% as.data.frame()
+# Some naming bullshit... god damn it
+# use this to diagnose RF_model$model$forest$independent.variable.names %in% colnames(profiles_training)
+colnames(profiles_training) <- map_chr(colnames(profiles_training), \(x) str_replace(x, "-", '.'))
+colnames(profiles_testing) <- map_chr(colnames(profiles_testing), \(x) str_replace(x, "-", '.'))
+colnames(profiles_training) <- ifelse(colnames(profiles_training) == "51.20", "X51.20", colnames(profiles_training))
+colnames(profiles_testing) <- ifelse(colnames(profiles_testing) == "51.20", "X51.20", colnames(profiles_testing))
 training_labels <- training_data_and_labels %>% select(sampleID, Condition)
 testing_labels <- testing_data_and_labels %>% select(sampleID, Condition)
 
