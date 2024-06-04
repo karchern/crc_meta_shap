@@ -14,7 +14,7 @@ if (interactive()) {
     f_id <- 5
     on_what <- "training"
     which_model <- "RF"
-    dataset <- 'Zeller'
+    dataset <- 'Selin20240604AllData'
 } else {
     args <- commandArgs(trailingOnly = TRUE)
     r_id <- as.integer(args[1])
@@ -26,11 +26,13 @@ if (interactive()) {
 
 set.seed(11323)
 
-# Load model
-lasso_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__lasso.rds")))
+# Load model 
+# For Selin's data we're only interested in RF
+#lasso_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__lasso.rds")))
 RF_model <- readRDS(here(str_c("data/models/model__fold_id_", f_id, "__repeat_", r_id, '__', dataset, "__RF.rds")))
 
-models <- list("RF" = RF_model, "lasso" = lasso_model)
+#models <- list("RF" = RF_model, "lasso" = lasso_model)
+models <- list("RF" = RF_model)
 
 training_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("training_data_fold", f_id, "__repeat_", r_id, '__', dataset, ".tsv")))
 testing_data_and_labels <- read_tsv(here('data', 'fold_info', str_c("test_data_fold", f_id, "__repeat_", r_id, '__', dataset, ".tsv")))
@@ -53,15 +55,3 @@ if (on_what == "training") {
 }
 
 write_rds(ps, here(str_c("results/kernelshap_objects/resamp_id_", r_id, "__fold_id_", f_id, "__on_", on_what, "__which_model_", which_model, '__', dataset, ".rds")))
-
-# ps_shapviz <- shapviz(ps)
-# ps_shapviz_importance <- sv_importance(ps_shapviz, kind = 'both', max_display = 30)
-# sv_waterfall(ps_shapviz, row_id = 1)
-
-# library(randomForest)
-# rfOOBImpoortance <- randomForest(
-#     as.formula(str_c("Condition ~ ", str_c(colnames(profileWithMeta)[colnames(profileWithMeta) != "Condition"], collapse = " + "))),
-#     # as.formula(str_c("effect_size ~ ", str_c(colnames(trainData)[1:10000], collapse = " + "))),
-#     data = profileWithMeta %>% mutate(Condition = factor(Condition, levels = c("CTR", "CRC"))),
-#     importance = TRUE
-# )$importance
