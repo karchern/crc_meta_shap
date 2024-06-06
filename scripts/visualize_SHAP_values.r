@@ -7,6 +7,7 @@ library(Matrix)
 
 dataset <- "Selin20240604Balanced"
 pc <- -4 # This needs to be manually set based on the dataset
+label_case <- '1' # This needs to be manually set based on the dataset
 
 # load models and clean up
 modelPaths <- list.files(here('data', 'models'), pattern = ".rds", full.names = TRUE)
@@ -89,7 +90,7 @@ shap <- shap %>%
 
 shap <- shap %>%
     mutate(shap_values_long = pmap(list(1:dim(shap)[1], shap_values, profile), \(i, x, p) {
-        tmp <- x$S$CRC %>% as.data.frame()
+        tmp <- x$S[[label_case]] %>% as.data.frame()
         tmp$sampleID <- p$sampleID
         tmp <- tmp %>%
             pivot_longer(-sampleID) %>%
