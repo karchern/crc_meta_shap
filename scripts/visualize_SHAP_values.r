@@ -62,7 +62,6 @@ shap <- shap %>%
 profilePaths <- list.files(here("data", 'fold_info'), pattern = ".tsv", full.names = TRUE)
 profilePaths <- profilePaths[str_detect(profilePaths, str_c(dataset, ".tsv"))]
 profiles <- map(profilePaths, \(x) {
-    print(x)
     read.table(x, header = TRUE, sep = "\t", stringsAsFactors = FALSE, check.names = FALSE) %>% as_tibble()
 })
 names(profiles) <- profilePaths
