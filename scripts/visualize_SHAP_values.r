@@ -8,6 +8,7 @@ library(Matrix)
 dataset <- "Selin20240604Balanced"
 pc <- -4 # This needs to be manually set based on the dataset
 label_case <- '1' # This needs to be manually set based on the dataset
+model_types_to_evaluate <- c("RF") # This needs to be manually set based on the dataset to produce plots in the beginning of this script
 
 # load models and clean up
 modelPaths <- list.files(here('data', 'models'), pattern = ".rds", full.names = TRUE)
@@ -142,8 +143,8 @@ ggsave(plot = ggplot(data = lel,
     theme_publication(), filename = here('plots', str_c(dataset, "_shap_mean_vs_var.pdf")), width = 5, height = 3)
 
 
-
-for (mt in c("RF", "lasso")) {
+# This seems to take several minutes to run, which is a bummer.
+for (mt in model_types_to_evaluate) {
     shap_tmp2 <- shap_tmp %>% filter(model_type == mt)
     shap_tmp2 <- shap_tmp2 %>%
         inner_join(shap_tmp2 %>%
@@ -172,7 +173,7 @@ for (mt in c("RF", "lasso")) {
 
 
 shap_tmp <- shap_tmp %>% summarize(shap_value = median(shap_value))
-for (mt in c("lasso", "RF")) {
+for (mt in model_types_to_evaluate) {
 
     shap_tmp2 <- shap_tmp %>%
         filter(model_type == mt)
@@ -233,10 +234,9 @@ for (mt in c("lasso", "RF")) {
 
 
 # For simplicity, let's move on with RF on testing data
-
 mt <- "RF"
 more_plot_data <- shap_tmp %>%
-    filter(model_type == mt, on == "training\nset")
+    filter(model_type == mt, on == "test\nset")
 
 more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
     group_by(feature) %>%
