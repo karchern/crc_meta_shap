@@ -141,7 +141,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         ylab("log10(var(shap))\nover resampled models") +
         theme_publication(), filename = here('plots', str_c(dataset, "_shap_mean_vs_var.pdf")), width = 5, height = 3)
 
-    This seems to take several minutes to run, which is a bummer.
+    #This seems to take several minutes to run, which is a bummer.
     for (mt in model_types_to_evaluate) {
         shap_tmp2 <- shap_tmp %>% filter(model_type == mt)
         shap_tmp2 <- shap_tmp2 %>%
