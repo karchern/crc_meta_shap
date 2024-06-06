@@ -5,12 +5,12 @@ library(ggembl)
 # Loading the Matrix package seems crucial to avoid some weird error
 library(Matrix)
 
-dataset <- "Zeller"
-pc <- -4
+dataset <- "Selin20240604Balanced"
+pc <- -4 # This needs to be manually set based on the dataset
 
 # load models and clean up
 modelPaths <- list.files(here('data', 'models'), pattern = ".rds", full.names = TRUE)
-modelPaths <- modelPaths[str_detect(modelPaths, dataset)]
+modelPaths <- modelPaths[str_detect(modelPaths, str_c(dataset, "__"))]
 models <- map(modelPaths, \(x) {
     readRDS(x)
 })
@@ -36,7 +36,7 @@ models <- models %>%
 
 # load shap values and clean up
 shapPaths <- list.files(here("results", 'kernelshap_objects'), pattern = ".rds", full.names = TRUE)
-shapPaths <- shapPaths[str_detect(shapPaths, dataset)]
+shapPaths <- shapPaths[str_detect(shapPaths, str_c(dataset, ".rds"))]
 shap <- map(shapPaths, \(x) {
     readRDS(x)
 })
@@ -60,9 +60,10 @@ shap <- shap %>%
 
 # Loada training/testing data
 profilePaths <- list.files(here("data", 'fold_info'), pattern = ".tsv", full.names = TRUE)
-profilePaths <- profilePaths[str_detect(profilePaths, dataset)]
+profilePaths <- profilePaths[str_detect(profilePaths, str_c(dataset, ".tsv"))]
 profiles <- map(profilePaths, \(x) {
-    read_tsv(x)
+    print(x)
+    read.table(x, header = TRUE, sep = "\t", stringsAsFactors = FALSE, check.names = FALSE) %>% as_tibble()
 })
 names(profiles) <- profilePaths
 profiles <- enframe(profiles, name = 'raw_path', value = "profile")
