@@ -6,7 +6,9 @@ library(ggembl)
 library(Matrix)
 
 dataset <- "Selin20240604Balanced"
-pc <- -4 # This needs to be manually set based on the dataset
+#pc <- -4 # This needs to be manually set based on the dataset
+# pc (pseudo count) used to be mandatory and helpful for vis downstream if your profiles contain relative abundances
+# Selin's data seems to  be z-scored, so I'm getting rid of this functiooality
 label_case <- '1' # This needs to be manually set based on the dataset
 model_types_to_evaluate <- c("RF") # This needs to be manually set based on the dataset to produce plots in the beginning of this script
 
@@ -273,8 +275,9 @@ more_plot_data <- more_plot_data %>%
 
 plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
-    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
+    # geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
+    # geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
+    geom_point(data = more_plot_data, aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +    
     geom_point(data = more_plot_data %>%
         group_by(feature) %>%
         summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
@@ -312,8 +315,9 @@ for (f in c("Fusobacterium", "Parvimonas", "Peptostreptococcus", "Porphyromonas"
 plot <- ggplot() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     #    geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
-    geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
-    geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+    # geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
+    # geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+    geom_point(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
     geom_point(data = more_plot_data %>%
         group_by(feature) %>%
         summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
