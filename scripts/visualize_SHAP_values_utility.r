@@ -248,14 +248,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         summarize(n = mean(abs(shap_value))) %>%
         arrange(desc(n)) %>%
         pull(feature))
-
-    more_plot_data <- more_plot_data %>%
-        inner_join(more_plot_data %>%
-            group_by(feature) %>%
-            summarize(n = mean(abs(shap_value))) %>%
-            arrange(desc(n)) %>%
-            head(10), by = "feature")
-    l <- levels(more_plot_data$feature)
+    l <- levels(more_plot_data$feature)        
 
     more_plot_data <- more_plot_data %>%
         left_join(
@@ -266,8 +259,6 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
                 pivot_longer(-c(sampleID, Condition)) %>%
                 rename(feature = name, feature_value = value), by = c('sampleID', "feature"))
 
-    more_plot_data$feature <- factor(more_plot_data$feature, levels = rev(l))
-
     # Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
     more_plot_data <- more_plot_data %>%
         left_join(more_plot_data %>%
@@ -277,6 +268,14 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
             ), by = 'feature') %>%
         mutate(spearman_sign = ifelse(spearman > 0, 1, -1))
 
+    more_plot_data <- more_plot_data %>%
+        inner_join(more_plot_data %>%
+            group_by(feature) %>%
+            summarize(n = mean(abs(shap_value))) %>%
+            arrange(desc(n)) %>%
+            head(10), by = "feature")
+
+    more_plot_data$feature <- factor(more_plot_data$feature, levels = rev(l))
     plot <- ggplot() +
         geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
         # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
