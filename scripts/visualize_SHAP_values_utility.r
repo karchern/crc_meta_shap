@@ -73,6 +73,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         prof <- read.table(x, header = TRUE, sep = "\t", stringsAsFactors = FALSE, check.names = FALSE) %>% as_tibble()
         colnames(prof) <- map_chr(colnames(prof), \(x) str_replace(x, "-", '.'))
         colnames(prof) <- ifelse(colnames(prof) == "51.20", "X51.20", colnames(prof))        
+        return(prof)
     })
     names(profiles) <- profilePaths
     profiles <- enframe(profiles, name = 'raw_path', value = "profile")
@@ -340,7 +341,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     }
 
     # Compare global shap values with single-feature wilcox test values
-    shap <- more_plot_data_all %>%
+    shap_s <- more_plot_data_all %>%
             group_by(feature) %>%
             summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
             distinct()
@@ -357,7 +358,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
                 })) %>%
                 mutate(wilcox_p = map_dbl(wilcox, "p.value"))
     shap_wilcox <- full_join(
-        shap %>%
+        shap_s %>%
             rename(shap = n), 
         wilcox %>%
             select(feature, wilcox_p))
