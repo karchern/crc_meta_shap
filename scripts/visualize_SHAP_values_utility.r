@@ -266,7 +266,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
                 pivot_longer(-c(sampleID, Condition)) %>%
                 rename(feature = name, feature_value = value), by = c('sampleID', "feature"))
 
-    more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
+    more_plot_data$feature <- factor(more_plot_data$feature, levels = rev(l))
 
     # Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
     more_plot_data <- more_plot_data %>%
@@ -279,9 +279,9 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
 
     plot <- ggplot() +
         geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-        # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
-        # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, shape = Condition, color = feature_value), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
-        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, shape = Condition, color = feature_value), position = position_jitter(height = 0, width = 0.25), alpha = 0.2, size = 1) +    
+        # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
+        # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, color = feature_value), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
+        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, color = feature_value), position = position_jitter(height = 0, width = 0.45), alpha = 0.2, size = 1) +    
         geom_point(data = more_plot_data %>%
             group_by(feature) %>%
             summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
@@ -293,12 +293,31 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         theme_presentation() +
         coord_flip() +
         # ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
-        scale_color_continuous(low = "blue", high = "yellow") +
+        #scale_color_continuous(low = "blue", high = "yellow") +
+        scale_color_gradientn(
+            colors = c('#008000', "white",'#964B00'), 
+            #values = c(-3,0,3),
+            limits = c(-3, 3),
+            oob = scales::squish) +
+        # scale_color_gradient2() +
         scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
         NULL +
         ylab("SHAP value") +
         xlab("Genus")
-    ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb.pdf")), width = 5, height = 5)
+    plot_right <- ggplot() +
+        geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+        geom_bar(data = more_plot_data %>%
+            group_by(feature) %>%
+            summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
+            distinct(), aes(y = n, x = feature), stat = 'identity') +
+            theme_presentation() +
+            coord_flip()   +
+            theme(
+                axis.text.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                axis.title.y = element_blank()) +
+            ylab("mean(abs(SHAP value))\n* spearman sign")
+    ggsave(plot = plot + plot_right + plot_layout(widths = c(1, 0.8), guides = 'collect'), filename = here('plots', str_c(dataset, "_SHAP_vs_relAb.pdf")), width = 6, height = 5)
 
     for (f in c("Fusobacterium", "Parvimonas", "Peptostreptococcus", "Porphyromonas", "CAG.41", "Anaerostipes", "Eubacterium_G")) {
         print(str_c("Processing feature: ", f))
