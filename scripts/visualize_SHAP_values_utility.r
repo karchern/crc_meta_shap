@@ -1,3 +1,10 @@
+# load packages
+library(tidyverse)
+library(patchwork)
+library(here)
+library(ggembl)
+# Loading the Matrix package seems crucial to avoid some weird error
+library(Matrix)
 
 vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     #dataset <- "Selin20240604Balanced"
@@ -257,7 +264,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
                 unnest() %>%
                 distinct() %>%
                 pivot_longer(-c(sampleID, Condition)) %>%
-                rename(feature = name, log10relAb = value), by = c('sampleID', "feature"))
+                rename(feature = name, feature_value = value), by = c('sampleID', "feature"))
 
     more_plot_data$feature <- factor(more_plot_data$feature, levels = l)
 
@@ -266,21 +273,23 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         left_join(more_plot_data %>%
             group_by(feature) %>%
             summarize(
-                spearman = cor(shap_value, log10relAb, method = "spearman")
+                spearman = cor(shap_value, feature_value, method = "spearman")
             ), by = 'feature') %>%
         mutate(spearman_sign = ifelse(spearman > 0, 1, -1))
 
     plot <- ggplot() +
         geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-        # geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
-        # geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
-        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, shape = Condition, color = log10relAb), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +    
+        # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, shape = Condition), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
+        # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, shape = Condition, color = feature_value), position = position_jitter(height = 0, width = 0.25), alpha = 0.5) +
+        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, shape = Condition, color = feature_value), position = position_jitter(height = 0, width = 0.25), alpha = 0.2, size = 1) +    
         geom_point(data = more_plot_data %>%
             group_by(feature) %>%
-            summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+            summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
+            distinct(), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
         geom_point(data = more_plot_data %>%
             group_by(feature) %>%
-            summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
+            summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
+            distinct(), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
         theme_presentation() +
         coord_flip() +
         # ggtitle(str_c("Dataset: ", dataset, "\nModel: ", mt, "\neach dot is a sample\nblack dots samples\nwith feature == 0")) +
@@ -289,7 +298,6 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         NULL +
         ylab("SHAP value") +
         xlab("Genus")
-
     ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb.pdf")), width = 5, height = 5)
 
     for (f in c("Fusobacterium", "Parvimonas", "Peptostreptococcus", "Porphyromonas", "CAG.41", "Anaerostipes", "Eubacterium_G")) {
@@ -300,7 +308,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
 
         plot <- ggplot() +
             geom_hline(yintercept = 0) +
-            geom_point(data = tmp, aes(x = log10relAb, y = shap_value, color = Condition), alpha = 0.3) +
+            geom_point(data = tmp, aes(x = feature_value, y = shap_value, color = Condition), alpha = 0.3) +
             theme_presentation() +
             ggtitle(f)
 
@@ -312,9 +320,9 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     plot <- ggplot() +
         geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
         #    geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
-        # geom_point(data = more_plot_data %>% filter(log10relAb == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
-        # geom_point(data = more_plot_data %>% filter(log10relAb > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
-        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = log10relAb), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+        # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
+        # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
         geom_point(data = more_plot_data %>%
             group_by(feature) %>%
             summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
