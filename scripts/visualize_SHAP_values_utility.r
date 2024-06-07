@@ -240,17 +240,17 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
 
     # For simplicity, let's move on with RF on testing data
     mt <- "RF"
-    more_plot_data <- shap_tmp %>%
+    more_plot_data_all <- shap_tmp %>%
         filter(model_type == mt, on == "test\nset")
 
-    more_plot_data$feature <- factor(more_plot_data$feature, levels = more_plot_data %>%
+    more_plot_data_all$feature <- factor(more_plot_data_all$feature, levels = more_plot_data %>%
         group_by(feature) %>%
         summarize(n = mean(abs(shap_value))) %>%
         arrange(desc(n)) %>%
         pull(feature))
-    l <- levels(more_plot_data$feature)        
+    l <- levels(more_plot_data_all$feature)        
 
-    more_plot_data <- more_plot_data %>%
+    more_plot_data_all <- more_plot_data_all %>%
         left_join(
             profiles %>%
                 select(profile) %>%
@@ -260,7 +260,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
                 rename(feature = name, feature_value = value), by = c('sampleID', "feature"))
 
     # Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
-    more_plot_data <- more_plot_data %>%
+    more_plot_data_all <- more_plot_data_all %>%
         left_join(more_plot_data %>%
             group_by(feature) %>%
             summarize(
@@ -268,14 +268,16 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
             ), by = 'feature') %>%
         mutate(spearman_sign = ifelse(spearman > 0, 1, -1))
 
-    more_plot_data <- more_plot_data %>%
+    more_plot_data_all$feature <- factor(more_plot_data_all$feature, levels = rev(l))
+
+    more_plot_data <- more_plot_data_all %>%
         inner_join(more_plot_data %>%
             group_by(feature) %>%
             summarize(n = mean(abs(shap_value))) %>%
             arrange(desc(n)) %>%
             head(10), by = "feature")
 
-    more_plot_data$feature <- factor(more_plot_data$feature, levels = rev(l))
+
     plot <- ggplot() +
         geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
         # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value), position = position_jitter(height = 0, width = 0.25), color = 'black', alpha = 0.35) +
