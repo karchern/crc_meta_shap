@@ -336,27 +336,27 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
 
     }
 
-    plot <- ggplot() +
-        geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-        #    geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
-        # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
-        # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
-        geom_point(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
-        geom_point(data = more_plot_data %>%
-            group_by(feature) %>%
-            summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
-        geom_point(data = more_plot_data %>%
-            group_by(feature) %>%
-            summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
-        theme_presentation() +
-        coord_flip() +
-        scale_color_continuous(low = "blue", high = "yellow") +
-        scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
-        NULL +
-        ylab("SHAP value") +
-        xlab("Genus")
+    # plot <- ggplot() +
+    #     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    #     #    geom_boxplot(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition), alpha = 0.3) +
+    #     # geom_point(data = more_plot_data %>% filter(feature_value == pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition), position = position_jitterdodge(jitter.width = 0.25), color = 'black', alpha = 0.35) +
+    #     # geom_point(data = more_plot_data %>% filter(feature_value > pc), aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+    #     geom_point(data = more_plot_data, aes(x = feature, y = shap_value, fill = Condition, shape = Condition, color = feature_value), position = position_jitterdodge(jitter.width = 0.25), alpha = 0.5) +
+    #     geom_point(data = more_plot_data %>%
+    #         group_by(feature) %>%
+    #         summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 18, color = 'orange', size = 2.5, inherit.aes = F) +
+    #     geom_point(data = more_plot_data %>%
+    #         group_by(feature) %>%
+    #         summarize(n = mean(abs(shap_value)) * spearman_sign), aes(x = feature, y = n), shape = 5, color = 'black', size = 2.5, inherit.aes = F) +
+    #     theme_presentation() +
+    #     coord_flip() +
+    #     scale_color_continuous(low = "blue", high = "yellow") +
+    #     scale_shape_manual(values = c("CRC" = 16, "CTR" = 1)) +
+    #     NULL +
+    #     ylab("SHAP value") +
+    #     xlab("Genus")
 
-    ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_CRC_CTR.pdf")), width = 5, height = 4)
+    # ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_relAb_by_CRC_CTR.pdf")), width = 5, height = 4)
 
 
     # models2 <- models %>%
