@@ -70,7 +70,9 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     profilePaths <- list.files(here("data", 'fold_info'), pattern = ".tsv", full.names = TRUE)
     profilePaths <- profilePaths[str_detect(profilePaths, str_c(dataset, ".tsv"))]
     profiles <- map(profilePaths, \(x) {
-        read.table(x, header = TRUE, sep = "\t", stringsAsFactors = FALSE, check.names = FALSE) %>% as_tibble()
+        prof <- read.table(x, header = TRUE, sep = "\t", stringsAsFactors = FALSE, check.names = FALSE) %>% as_tibble()
+        colnames(prof) <- map_chr(colnames(prof), \(x) str_replace(x, "-", '.'))
+        colnames(prof) <- ifelse(colnames(prof) == "51.20", "X51.20", colnames(prof))        
     })
     names(profiles) <- profilePaths
     profiles <- enframe(profiles, name = 'raw_path', value = "profile")
@@ -243,7 +245,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     more_plot_data_all <- shap_tmp %>%
         filter(model_type == mt, on == "test\nset")
 
-    more_plot_data_all$feature <- factor(more_plot_data_all$feature, levels = more_plot_data %>%
+    more_plot_data_all$feature <- factor(more_plot_data_all$feature, levels = more_plot_data_all %>%
         group_by(feature) %>%
         summarize(n = mean(abs(shap_value))) %>%
         arrange(desc(n)) %>%
@@ -261,7 +263,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
 
     # Get spearman cors between genus abundance and shap to pimp the mean(abs(shap)) summary metric
     more_plot_data_all <- more_plot_data_all %>%
-        left_join(more_plot_data %>%
+        left_join(more_plot_data_all %>%
             group_by(feature) %>%
             summarize(
                 spearman = cor(shap_value, feature_value, method = "spearman")
@@ -336,6 +338,31 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         ggsave(plot = plot, filename = here('plots', str_c(dataset, "__", mt, "_SHAP_vs_relAb_scatter_", f, ".pdf")), width = 3.75, height = 2.8)
 
     }
+
+    # Compare global shap values with single-feature wilcox test values
+    shap <- more_plot_data_all %>%
+            group_by(feature) %>%
+            summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
+            distinct()
+    wilcox <- profiles %>%
+                select(profile) %>%
+                unnest() %>%
+                distinct() %>%
+                pivot_longer(-c(sampleID, Condition)) %>%
+                rename(feature = name, feature_value = value) %>%
+                group_by(feature) %>%
+                nest() %>%
+                mutate(wilcox = map(data, \(x) {
+                    wilcox.test(x %>% filter(Condition == "CRC") %>% pull(feature_value), x %>% filter(Condition == "CTR") %>% pull(feature_value))
+                })) %>%
+                mutate(wilcox_p = map_dbl(wilcox, "p.value"))
+    shap_wilcox <- full_join(
+        shap %>%
+            rename(shap = n), 
+        wilcox %>%
+            select(feature, wilcox_p))
+
+
 
     # plot <- ggplot() +
     #     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
