@@ -180,7 +180,10 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     }
 
 
+    # IMPORTANT...
     shap_tmp <- shap_tmp %>% summarize(shap_value = median(shap_value))
+
+
     for (mt in model_types_to_evaluate) {
 
         shap_tmp2 <- shap_tmp %>%
@@ -343,7 +346,7 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
     # Compare global shap values with single-feature wilcox test values
     shap_s <- more_plot_data_all %>%
             group_by(feature) %>%
-            summarize(n = mean(abs(shap_value)) * spearman_sign) %>%
+            summarize(n = mean(abs(shap_value))) %>%
             distinct()
     wilcox <- profiles %>%
                 select(profile) %>%
@@ -361,8 +364,17 @@ vis_all <- function(dataset, label_case, model_types_to_evaluate) {
         shap_s %>%
             rename(shap = n), 
         wilcox %>%
-            select(feature, wilcox_p))
+            select(feature, wilcox_p)) %>%
+        mutate(minuslog10wilcox_p = -log10(wilcox_p))
 
+    sc <- cor(shap_wilcox$shap, shap_wilcox$minuslog10wilcox_p, method = "pearson")
+
+    plot <- ggplot(data = shap_wilcox) +
+        geom_point(aes(x = log10(shap), y = minuslog10wilcox_p), alpha = 0.2) +
+        theme_presentation() +
+        ylab("-log10(wilcox_p)")
+    
+    ggsave(plot = plot, filename = here('plots', str_c(dataset, "_SHAP_vs_wilcox_p_values.pdf")), width = 3, height = 3)
 
 
     # plot <- ggplot() +
