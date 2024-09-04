@@ -11,6 +11,6 @@
 #SBATCH --output=/scratch/karcher/shap/%a.out
 #SBATCH --job-name=get_shap
 
-## RUN THIS FROM /g/scb/zeller/karcher/anaconda3/envs/r_test_new
+## RUN THIS FROM conda activate /g/scb2/zeller/karcher/mambaforge/envs/mlr3_0.20.2
 cd /g/scb/zeller/karcher/SHAP/scripts
 cat iv.sh |  head -n $SLURM_ARRAY_TASK_ID | tail -1 | bash

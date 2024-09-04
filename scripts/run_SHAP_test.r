@@ -1,4 +1,5 @@
 # Based on https://mlr3book.mlr-org.com/chapters/chapter12/model_interpretation.html#sec-shapley
+library(mlr3)
 library(mlr3verse)
 library(mlr3learners)
 # library(iml) # provides Predictor object, providing different model-agnostic interpretation methods (SHAP but also others)
@@ -48,13 +49,27 @@ colnames(profiles_testing) <- ifelse(colnames(profiles_testing) == "51.20", "X51
 training_labels <- training_data_and_labels %>% select(sampleID, Condition)
 testing_labels <- testing_data_and_labels %>% select(sampleID, Condition)
 
+# some testing that didnt lead anywhere
+#profiles_testing_with_labels <- cbind(profiles_testing, testing_data_and_labels$Condition)
+#colnames(profiles_testing_with_labels)[length(colnames(profiles_testing_with_labels))] <- "Condition"
+#profiles_testing_with_labels$Condition <- ifelse(profiles_testing_with_labels$Condition == "CRC", 1, -1)
+#profiles_testing_with_labels$Condition <- as.factor(profiles_testing_with_labels$Condition)
+#task <- TaskClassif$new(id = "my_task", backend = profiles_testing_with_labels, target = "Condition")
+
+# Custom predict function
+pf <- function(m, X) {
+    res <- m$predict_newdata(X)
+    res <- as.data.frame(as.data.table(res))[, 4]
+    return(res)
+}
+
 if (on_what == "training") {
     ps <- kernelshap(
         models[[which_model]], X = profiles_training, bg_X = profiles_training,
     )
 } else if (on_what == "testing") {
     ps <- kernelshap(
-        models[[which_model]], X = profiles_testing, bg_X = profiles_testing,
+        models[[which_model]], X = profiles_testing, bg_X = profiles_testing,  pred_fun = pf
     )
 } else {
     stop("on_what must be either 'training' or 'testing'")
